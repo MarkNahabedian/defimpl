@@ -1,0 +1,36 @@
+package main
+
+import "defimpl/util"
+import "go/ast"
+import "text/template"
+
+func init() {
+	vd := &VerbDefinition{ Verb: "read" }
+	vd.Description = "returns the value of the field."
+	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
+		ftype, ok := m.Type.(*ast.FuncType)
+		if !ok {
+			return nil
+		}
+		if err := checkSignature(ftype, 0, 1); err != nil {
+			return err
+		}
+		results := util.FieldListSlice(ftype.Results)
+		spec.CheckType(results[0].Type)
+		spec.Verbs = append(spec.Verbs, &VerbTemplateParameter{
+			Verb: vd,
+			InterfaceName: id.InterfaceName,
+			StructName: id.StructName(),
+			MethodName: m.Names[0].Name,
+			SlotName: spec.Name,
+			Type: spec.Type,
+		})
+		return nil
+	}
+	vd.Template = template.Must(template.New(vd.Verb).Parse(`
+		func (x *{{.StructName}}) {{.MethodName}} () {{.Type.String}} {
+			return x.{{.SlotName}}
+		}
+	`))
+	VerbDefinitions[vd.Verb] = vd
+}
