@@ -8,7 +8,7 @@ package test
 type Thing interface {
 	Name() string      // defimpl:"read name"
 	SetName(string)    // defimpl:"set name"
-//	AddRelated(Thing)  // defimpl:"append related"
-//	DoRelated(func(Thing) bool)   // defimpl:"iterate related"
+	AddRelated(...Thing)  // defimpl:"append related"
+	DoRelated(func(Thing) bool)   // defimpl:"iterate related"
 }
 

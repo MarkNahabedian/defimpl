@@ -4,7 +4,6 @@ import "bytes"
 import "defimpl/util"
 import "fmt"
 import "go/ast"
-// import "go/types"
 import "text/template"
 
 type VerbTemplateParameter struct {
@@ -55,5 +54,6 @@ func checkSignature(fd *ast.FuncType, paramCount, resultCount int) error {
 	return nil
 }
 
-
-
+func SliceOfType(typ ast.Expr) ast.Expr {
+	return &ast.ArrayType{ Elt: typ }
+}

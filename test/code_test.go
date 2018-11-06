@@ -3,7 +3,7 @@ package test
 import "testing"
 
 func NewThing() Thing {
-	return &ThingImpl{}
+	return Thing(&ThingImpl{})
 }
 
 func TestReadSet(t *testing.T) {
@@ -17,7 +17,6 @@ func TestReadSet(t *testing.T) {
 	}
 }
 
-/*
 func TestAppendIterate(t *testing.T) {
 	thing1 := NewThing()
 	thing1.SetName("thing1")
@@ -37,4 +36,4 @@ func TestAppendIterate(t *testing.T) {
 		return true
 	})
 }
-*/
+

@@ -2,6 +2,7 @@ package main
 
 import "defimpl/util"
 import "go/ast"
+import "go/types"
 import "text/template"
 
 func init() {
@@ -27,8 +28,10 @@ func init() {
 		})
 		return nil
 	}
-	vd.Template = template.Must(template.New(vd.Verb).Parse(`
-		func (x *{{.StructName}}) {{.MethodName}}(v {{.Type.String}}) {
+	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{} {
+		"ExprString": types.ExprString,
+	}).Parse(`
+		func (x *{{.StructName}}) {{.MethodName}}(v {{ExprString .Type}}) {
 			x.{{.SlotName}} = v
 		}
 	`))
