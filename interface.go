@@ -50,13 +50,14 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 		InterfaceName: spec.Name.Name,
 		SlotSpecs: []*slotSpec{},
 	}
-	specs := map[string] *slotSpec{}
 	getSpec := func(name string) *slotSpec {
-		if spec, ok := specs[name]; ok {
-			return spec
+		for _, sspec := range id.SlotSpecs {
+			if sspec.Name == name {
+				return sspec
+			}
 		}
 		spec := &slotSpec{ Name: name }
-		specs[name] = spec
+		id.SlotSpecs = append(id.SlotSpecs, spec)
 		return spec
 	}
 	for _, m := range util.FieldListSlice(it.Methods) {
@@ -69,9 +70,6 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 		}
 		spec := getSpec(slot)
 		spec.assimilate(ctx, id, m, verb)
-	}
-	for _, sspec := range specs {
-		id.SlotSpecs = append(id.SlotSpecs, sspec)
 	}
 	return id
 }
