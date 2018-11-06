@@ -29,6 +29,9 @@ func TestSliceValued(t *testing.T) {
 	if want, got := 2, thing1.CountRelated(); got != want {
 		t.Errorf("Wrong slice length, got %d, want %d", got, want)
 	}
+	if want, got := thing3, thing1.GetRelated(1); got != want {
+		t.Errorf("Wrong element at index 1: got %#v, want %#v", got, want)
+	}
 	expect := []Thing{ thing2, thing3 }
 	expect_index := 0
 	thing1.DoRelated(func(thing Thing) bool {
