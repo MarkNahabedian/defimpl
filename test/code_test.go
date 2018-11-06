@@ -32,7 +32,7 @@ func TestSliceValued(t *testing.T) {
 	if want, got := thing3, thing1.GetRelated(1); got != want {
 		t.Errorf("Wrong element at index 1: got %#v, want %#v", got, want)
 	}
-	expect := []Thing{ thing2, thing3 }
+	expect := []Thing{thing2, thing3}
 	expect_index := 0
 	thing1.DoRelated(func(thing Thing) bool {
 		if want := expect[expect_index]; thing != want {
@@ -42,4 +42,3 @@ func TestSliceValued(t *testing.T) {
 		return true
 	})
 }
-

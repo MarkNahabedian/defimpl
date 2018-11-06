@@ -12,7 +12,7 @@ import _ "golang.org/x/tools/go/ast/astutil"
 type InterfaceDefinition struct {
 	InterfaceType *ast.InterfaceType
 	InterfaceName string
-	SlotSpecs []*slotSpec
+	SlotSpecs     []*slotSpec
 }
 
 func (idef *InterfaceDefinition) StructName() string {
@@ -48,7 +48,7 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 	id := &InterfaceDefinition{
 		InterfaceType: it,
 		InterfaceName: spec.Name.Name,
-		SlotSpecs: []*slotSpec{},
+		SlotSpecs:     []*slotSpec{},
 	}
 	getSpec := func(name string) *slotSpec {
 		for _, sspec := range id.SlotSpecs {
@@ -56,7 +56,7 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 				return sspec
 			}
 		}
-		spec := &slotSpec{ Name: name }
+		spec := &slotSpec{Name: name}
 		id.SlotSpecs = append(id.SlotSpecs, spec)
 		return spec
 	}
@@ -95,15 +95,15 @@ func methodDefimpl(method *ast.Field) (verb *VerbDefinition, slot_name string) {
 }
 
 type slotSpec struct {
-	Name string
-	Type ast.Expr    // types.Type
+	Name  string
+	Type  ast.Expr // types.Type
 	Verbs []*VerbTemplateParameter
 }
 
 // CheckType fills in the Type of spec and makes sure that the Type is
 // consistent for all method verbs associated with that slot.
 func (spec *slotSpec) CheckType(typ ast.Expr) error {
-	teq := func (t1, t2 ast.Expr) bool {
+	teq := func(t1, t2 ast.Expr) bool {
 		return reflect.TypeOf(t1) == reflect.TypeOf(t2)
 	}
 	if spec.Type == nil {
@@ -111,7 +111,7 @@ func (spec *slotSpec) CheckType(typ ast.Expr) error {
 	} else {
 		if !teq(spec.Type, typ) {
 			return fmt.Errorf("Incompatible types: %#v, %#v",
-		    	typ, spec.Type)
+				typ, spec.Type)
 		}
 	}
 	return nil
@@ -128,19 +128,18 @@ func (spec *slotSpec) assimilate(ctx *context, id *InterfaceDefinition, m *ast.F
 }
 
 func (spec *slotSpec) AddImports(ctx *context, in, out *ast.File) {
-/*
-	typestring := spec.Type.Value
-	split := strings.Split(typestring, ".")
-	if len(split) <= 1 {
-		return
-	}
-	// *** Need to split by / and take last element
-	if strings.HasSuffix(split[0], out.Name.Name) {
-		return
-	}
-	// *** need to lookup package name in in to get the path and make
-	// sure the same name is defined as that path in out.
-	astutil.AddImport(ctx.fset, out, split[0])
-*/
+	/*
+		typestring := spec.Type.Value
+		split := strings.Split(typestring, ".")
+		if len(split) <= 1 {
+			return
+		}
+		// *** Need to split by / and take last element
+		if strings.HasSuffix(split[0], out.Name.Name) {
+			return
+		}
+		// *** need to lookup package name in in to get the path and make
+		// sure the same name is defined as that path in out.
+		astutil.AddImport(ctx.fset, out, split[0])
+	*/
 }
-

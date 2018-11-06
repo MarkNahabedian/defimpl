@@ -12,9 +12,9 @@ import "path/filepath"
 // context is the top level oblect representing the task of running
 // defimpl for a single go package source directory.
 type context struct {
-	dir string
-	fset *token.FileSet
-	info *types.Info
+	dir   string
+	fset  *token.FileSet
+	info  *types.Info
 	files []*File
 }
 
@@ -27,7 +27,7 @@ func NewContext(dir string) (*context, error) {
 	if !filepath.IsAbs(dir) {
 		return nil, fmt.Errorf("%s is not an absolute path", dir)
 	}
-	ctx := &context{ dir: dir }
+	ctx := &context{dir: dir}
 	ctx.fset = token.NewFileSet()
 	ctx.info = &types.Info{
 		Types: make(map[ast.Expr]types.TypeAndValue),
@@ -51,7 +51,7 @@ func NewContext(dir string) (*context, error) {
 
 // Check runs the go type checker on all of the files in ctx.
 func (ctx *context) Check() error {
-	astFiles := []*ast.File {}
+	astFiles := []*ast.File{}
 	for _, f := range ctx.files {
 		astFiles = append(astFiles, f.AstFile)
 	}

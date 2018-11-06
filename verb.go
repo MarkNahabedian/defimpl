@@ -7,12 +7,12 @@ import "go/ast"
 import "text/template"
 
 type VerbTemplateParameter struct {
-	Verb *VerbDefinition
+	Verb          *VerbDefinition
 	InterfaceName string
-	StructName string
-	MethodName string
-	SlotName string
-	Type ast.Expr  // types.Type
+	StructName    string
+	MethodName    string
+	SlotName      string
+	Type          ast.Expr // types.Type
 }
 
 func (v *VerbTemplateParameter) RunTemplate() string {
@@ -25,7 +25,7 @@ func (v *VerbTemplateParameter) RunTemplate() string {
 }
 
 type VerbDefinition struct {
-	Verb string
+	Verb        string
 	Description string
 	// Assimilate assimilates the method into the slotSpec if appropriate.
 	Assimilate func(*context, *VerbDefinition, *slotSpec, *InterfaceDefinition, *ast.Field) error
@@ -55,5 +55,5 @@ func checkSignature(fd *ast.FuncType, paramCount, resultCount int) error {
 }
 
 func SliceOfType(typ ast.Expr) ast.Expr {
-	return &ast.ArrayType{ Elt: typ }
+	return &ast.ArrayType{Elt: typ}
 }

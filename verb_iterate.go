@@ -7,7 +7,7 @@ import "text/template"
 import "defimpl/util"
 
 func init() {
-	vd := &VerbDefinition{ Verb: "iterate"}
+	vd := &VerbDefinition{Verb: "iterate"}
 	vd.Description = "Applies the specified function to each element of the slice-valued slot until the function returns false."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)
@@ -27,23 +27,23 @@ func init() {
 		if err := checkSignature(funarg, 1, 1); err != nil {
 			return err
 		}
-/*
-		if ctx.info.TypeOf(funarg.Results.List[0].Type).String() != "bool" {
-			return fmt.Errorf("Wrong return type for iterate parameter")
-		}
-*/
+		/*
+			if ctx.info.TypeOf(funarg.Results.List[0].Type).String() != "bool" {
+				return fmt.Errorf("Wrong return type for iterate parameter")
+			}
+		*/
 		spec.CheckType(SliceOfType(funarg.Params.List[0].Type))
 		spec.Verbs = append(spec.Verbs, &VerbTemplateParameter{
-			Verb: vd,
+			Verb:          vd,
 			InterfaceName: id.InterfaceName,
-			StructName: id.StructName(),
-			MethodName: m.Names[0].Name,
-			SlotName: spec.Name,
-			Type: spec.Type,
+			StructName:    id.StructName(),
+			MethodName:    m.Names[0].Name,
+			SlotName:      spec.Name,
+			Type:          spec.Type,
 		})
 		return nil
 	}
-	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{} {
+	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
 		"ExprString": types.ExprString,
 	}).Parse(`
 		func (x *{{.StructName}}) {{.MethodName}} (f func(item {{ExprString .Type.Elt}}) bool) {
