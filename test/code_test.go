@@ -17,7 +17,7 @@ func TestReadSet(t *testing.T) {
 	}
 }
 
-func TestAppendIterate(t *testing.T) {
+func TestSliceValued(t *testing.T) {
 	thing1 := NewThing()
 	thing1.SetName("thing1")
 	thing2 := NewThing()
@@ -26,6 +26,9 @@ func TestAppendIterate(t *testing.T) {
 	thing3.SetName("thing3")
 	thing1.AddRelated(thing2)
 	thing1.AddRelated(thing3)
+	if want, got := 2, thing1.CountRelated(); got != want {
+		t.Errorf("Wrong slice length, got %d, want %d", got, want)
+	}
 	expect := []Thing{ thing2, thing3 }
 	expect_index := 0
 	thing1.DoRelated(func(thing Thing) bool {
