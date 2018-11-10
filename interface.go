@@ -5,9 +5,11 @@ import "fmt"
 import "go/ast"
 import "go/token"
 import "os"
+import "path/filepath"
 import "reflect"
+import "strconv"
 import "strings"
-import _ "golang.org/x/tools/go/ast/astutil"
+import "golang.org/x/tools/go/ast/astutil"
 
 type InterfaceDefinition struct {
 	InterfaceType *ast.InterfaceType
@@ -128,18 +130,56 @@ func (spec *slotSpec) assimilate(ctx *context, id *InterfaceDefinition, m *ast.F
 }
 
 func (spec *slotSpec) AddImports(ctx *context, in, out *ast.File) {
-	/*
-		typestring := spec.Type.Value
-		split := strings.Split(typestring, ".")
-		if len(split) <= 1 {
-			return
+	p := TypePackage(spec.Type)
+	if p == "" {
+		return
+	}
+	AddImport(ctx.fset, in, out, p)
+}
+
+func TypePackage(t ast.Expr) string {
+	var tp func(ast.Expr, bool) string
+	tp = func(t ast.Expr, top bool) string {
+		switch e := t.(type) {
+		case *ast.Ident:
+			if top {
+				return ""
+			}
+			return e.Name
+		case *ast.SelectorExpr:
+			return tp(e.X, false)
+		case *ast.ArrayType:
+			return tp(e.Elt, true)
+		case *ast.StarExpr:
+			return tp(e.X, true)
+		default:
+			panic(fmt.Sprintf("TypePackage: unsupported expression type %T", t))
 		}
-		// *** Need to split by / and take last element
-		if strings.HasSuffix(split[0], out.Name.Name) {
-			return
+	}
+	return tp(t, true)
+}
+
+func AddImport(fset *token.FileSet, in, out *ast.File, pkg_identifier string) {
+	for _, para := range astutil.Imports(fset, in) {
+		for _, ispec := range para {
+			unq, err := strconv.Unquote(ispec.Path.Value)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				continue
+			}
+			if ispec.Name == nil {
+				if filepath.Base(unq) == pkg_identifier {
+					astutil.AddImport(fset, out, unq)
+					return
+				}
+			} else {
+				if  ispec.Name.Name == pkg_identifier {
+					astutil.AddNamedImport(fset, out, pkg_identifier, unq)
+					return
+				}
+			}
 		}
-		// *** need to lookup package name in in to get the path and make
-		// sure the same name is defined as that path in out.
-		astutil.AddImport(ctx.fset, out, split[0])
-	*/
+	}
+	panic(fmt.Sprintf("Can't find package %s in %s",
+		pkg_identifier, fset.Position(in.Package).Filename))
 }
