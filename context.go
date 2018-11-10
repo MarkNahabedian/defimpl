@@ -1,11 +1,8 @@
 package main
 
 import "fmt"
-import "go/ast"
-import "go/importer"
 import "go/parser"
 import "go/token"
-import "go/types"
 import "os"
 import "path/filepath"
 
@@ -14,7 +11,7 @@ import "path/filepath"
 type context struct {
 	dir   string
 	fset  *token.FileSet
-	info  *types.Info
+//	info  *types.Info
 	files []*File
 }
 
@@ -29,11 +26,6 @@ func NewContext(dir string) (*context, error) {
 	}
 	ctx := &context{dir: dir}
 	ctx.fset = token.NewFileSet()
-	ctx.info = &types.Info{
-		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs:  make(map[*ast.Ident]types.Object),
-		Uses:  make(map[*ast.Ident]types.Object),
-	}
 	pkgs, err := parser.ParseDir(ctx.fset, dir,
 		func(fi os.FileInfo) bool {
 			return !IsOutputFilePath(fi.Name())
@@ -47,20 +39,4 @@ func NewContext(dir string) (*context, error) {
 		}
 	}
 	return ctx, nil
-}
-
-// Check runs the go type checker on all of the files in ctx.
-func (ctx *context) Check() error {
-	astFiles := []*ast.File{}
-	for _, f := range ctx.files {
-		astFiles = append(astFiles, f.AstFile)
-	}
-	conf := types.Config{
-		Importer: importer.For("source", nil), // importer.Default(),
-	}
-	_, err := conf.Check(astFiles[0].Name.Name, ctx.fset, astFiles, ctx.info)
-	if err != nil {
-		return err
-	}
-	return nil
 }
