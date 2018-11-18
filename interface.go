@@ -16,6 +16,8 @@ type InterfaceDefinition struct {
 	InterfaceType *ast.InterfaceType
 	InterfaceName string
 	SlotSpecs     []*slotSpec
+	Inherited     []ast.Expr              // Interfaces that are included by this one
+	AllInherited  []*InterfaceDefinition  // Transitive closure of all inherited interfaces.
 }
 
 func (idef *InterfaceDefinition) StructName() string {
@@ -72,6 +74,7 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 		InterfaceType: it,
 		InterfaceName: spec.Name.Name,
 		SlotSpecs:     []*slotSpec{},
+		Inherited:     []ast.Expr{},
 	}
 	getSpec := func(name string) *slotSpec {
 		for _, sspec := range id.SlotSpecs {
@@ -84,6 +87,9 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 		return spec
 	}
 	for _, m := range util.FieldListSlice(it.Methods) {
+		if len(m.Names) == 0 {
+			id.Inherited = append(id.Inherited, m.Type)
+		}
 		if len(m.Names) != 1 {
 			continue
 		}
