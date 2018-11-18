@@ -100,15 +100,17 @@ var OutputFileTemplate *template.Template = template.Must(template.New("OutputFi
 package {{.Package}}
 	{{with $file := .}}
 		{{range .Interfaces}}
-			type {{.StructName}} struct {
-				{{range .SlotSpecs}}
-					{{.Name}} {{ExprString .Type}}
-				{{end}}
-			}
-			{{with $interface := .}}
-				{{range .SlotSpecs}}
-					{{range .Verbs}}
-						{{.RunTemplate}}
+			{{if not .IsAbstract}}
+				type {{.StructName}} struct {
+					{{range .SlotSpecs}}
+						{{.Name}} {{ExprString .Type}}
+					{{end}}
+				}
+				{{with $interface := .}}
+					{{range .SlotSpecs}}
+						{{range .Verbs}}
+							{{.RunTemplate}}
+						{{end}}
 					{{end}}
 				{{end}}
 			{{end}}

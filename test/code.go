@@ -27,3 +27,25 @@ type Thing interface {
 	// template
 	Template() *tmpl.Template // defimpl:"read template"
 }
+
+// Base1 (ABSTRACT)
+type Base1 interface {
+	Id() int  // defimpl:"read id"
+}
+
+// Base2 (ABSTRACT)
+type Base2 interface {
+	Name() string  // defimpl:"read name"
+}
+
+// Sub1 (ABSTRACT)
+type Sub1 interface {
+	Base1
+	Color() string  // defimpl:"read color"
+}
+
+type Gazong interface {
+	Base2
+	Sub1
+	Smug() bool     // defimpl:"read smug"
+}

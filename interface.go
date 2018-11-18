@@ -12,6 +12,7 @@ import "strings"
 import "golang.org/x/tools/go/ast/astutil"
 
 type InterfaceDefinition struct {
+	IsAbstract    bool
 	InterfaceType *ast.InterfaceType
 	InterfaceName string
 	SlotSpecs     []*slotSpec
@@ -25,6 +26,23 @@ func (idef *InterfaceDefinition) AddImports(ctx *context, in, out *ast.File) {
 	for _, ss := range idef.SlotSpecs {
 		ss.AddImports(ctx, in, out)
 	}
+}
+
+const InterfaceIsAbstractMarker string = "(ABSTRACT)"
+
+func isAbstractInterface(x *ast.GenDecl) bool {
+	var hasAbstract = func(cmnt *ast.CommentGroup) bool {
+		if cmnt == nil || cmnt.List == nil {
+			return false
+		}
+		for _, c := range cmnt.List {
+			if strings.Contains(c.Text, InterfaceIsAbstractMarker) {
+				return true
+			}
+		}
+		return false
+	}
+	return hasAbstract(x.Doc)
 }
 
 // NewInterface returns a new InterfaceDefinition if decl represents
@@ -48,6 +66,9 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 			ctx.fset.Position(gd.TokPos).String()))
 	}
 	id := &InterfaceDefinition{
+		// It appears that the parser associates to comment group with
+		// the outer GenDecl rather than with the TypeSpec.
+		IsAbstract:    isAbstractInterface(gd),
 		InterfaceType: it,
 		InterfaceName: spec.Name.Name,
 		SlotSpecs:     []*slotSpec{},
