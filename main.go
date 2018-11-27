@@ -15,6 +15,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return
 	}
+	ctx.DoInheritance()
 	for _, f := range ctx.files {
 		fmt.Printf("file %s\n", f.InputFilePath)
 		if err := f.Write(ctx); err != nil {

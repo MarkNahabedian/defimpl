@@ -51,7 +51,7 @@ func NewFile(ctx *context, astFile *ast.File) *File {
 		Interfaces:    []*InterfaceDefinition{},
 	}
 	for _, decl := range astFile.Decls {
-		if id := NewInterface(ctx, decl); id != nil {
+		if id := NewInterface(ctx, f.Package, decl); id != nil {
 			f.Interfaces = append(f.Interfaces, id)
 		}
 	}
@@ -104,6 +104,20 @@ package {{.Package}}
 				type {{.StructName}} struct {
 					{{range .SlotSpecs}}
 						{{.Name}} {{ExprString .Type}}
+				 	{{end}}
+					{{- /* Fields required to support abstract inherited interfaces: */ -}}
+					{{with $thisInterface := .}}
+						{{range $inherited := .AllInherited}}
+							{{if $inherited.IsAbstract}}
+								// Fields to support the {{$inherited.InterfaceName}} interface:
+								{{range $inherited.SlotSpecs}}
+									{{.Name}} {{ExprString .Type}}
+							 	{{end}}
+							{{else}}
+								// Interface {{$inherited.InterfaceName}} has a concrete implementation
+								{{$inherited.StructName}}
+							{{end}}
+						{{end}}
 					{{end}}
 				}
 				{{with $interface := .}}
@@ -111,6 +125,9 @@ package {{.Package}}
 						{{range .Verbs}}
 							{{.RunTemplate}}
 						{{end}}
+					{{end}}
+					{{range .InheritedVerbs}}
+						{{.RunTemplate}}
 					{{end}}
 				{{end}}
 			{{end}}

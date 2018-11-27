@@ -16,8 +16,13 @@ type InterfaceDefinition struct {
 	InterfaceType *ast.InterfaceType
 	InterfaceName string
 	SlotSpecs     []*slotSpec
-	Inherited     []ast.Expr              // Interfaces that are included by this one
+	Package       string
+	Inherited     []*IDKey                // Interfaces that are included by this one
 	AllInherited  []*InterfaceDefinition  // Transitive closure of all inherited interfaces.
+}
+
+func (idef *InterfaceDefinition) QualifiedName() string {
+	return fmt.Sprintf("%s.%s", idef.Package, idef.InterfaceName)
 }
 
 func (idef *InterfaceDefinition) StructName() string {
@@ -49,7 +54,7 @@ func isAbstractInterface(x *ast.GenDecl) bool {
 
 // NewInterface returns a new InterfaceDefinition if decl represents
 // an interface definition, otherwise it returns nil.
-func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
+func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition {
 	gd, ok := decl.(*ast.GenDecl)
 	if !ok {
 		return nil
@@ -74,7 +79,8 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 		InterfaceType: it,
 		InterfaceName: spec.Name.Name,
 		SlotSpecs:     []*slotSpec{},
-		Inherited:     []ast.Expr{},
+		Package:       pkg,
+		Inherited:     []*IDKey{},
 	}
 	getSpec := func(name string) *slotSpec {
 		for _, sspec := range id.SlotSpecs {
@@ -88,7 +94,7 @@ func NewInterface(ctx *context, decl ast.Decl) *InterfaceDefinition {
 	}
 	for _, m := range util.FieldListSlice(it.Methods) {
 		if len(m.Names) == 0 {
-			id.Inherited = append(id.Inherited, m.Type)
+			id.Inherited = append(id.Inherited, ExprToIDKey(m.Type, id.Package))
 		}
 		if len(m.Names) != 1 {
 			continue
@@ -164,6 +170,8 @@ func (spec *slotSpec) AddImports(ctx *context, in, out *ast.File) {
 	AddImport(ctx.fset, in, out, p)
 }
 
+// TypePackage returns the package name if the Expr (which should
+// identify a type) specifies one.
 func TypePackage(t ast.Expr) string {
 	var tp func(ast.Expr, bool) string
 	tp = func(t ast.Expr, top bool) string {

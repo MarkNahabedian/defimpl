@@ -42,3 +42,6 @@ func TestSliceValued(t *testing.T) {
 		return true
 	})
 }
+
+func TestInheritance(t *testing.T) {
+}
