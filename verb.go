@@ -24,6 +24,10 @@ func (v *VerbTemplateParameter) RunTemplate() string {
 	return writer.String()
 }
 
+func (v *VerbTemplateParameter) DocComment() string {
+	return fmt.Sprintf("// %s is part of the %s interface.", v.MethodName, v.InterfaceName)
+}
+
 type VerbDefinition struct {
 	Verb        string
 	Description string

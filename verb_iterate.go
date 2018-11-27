@@ -46,6 +46,7 @@ func init() {
 	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
 		"ExprString": types.ExprString,
 	}).Parse(`
+		{{.DocComment}}
 		func (x *{{.StructName}}) {{.MethodName}} (f func(item {{ExprString .Type.Elt}}) bool) {
 			for _, v := range x.{{.SlotName}} {
 				if !f(v) {

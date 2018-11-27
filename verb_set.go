@@ -31,6 +31,7 @@ func init() {
 	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
 		"ExprString": types.ExprString,
 	}).Parse(`
+		{{.DocComment}}
 		func (x *{{.StructName}}) {{.MethodName}}(v {{ExprString .Type}}) {
 			x.{{.SlotName}} = v
 		}
