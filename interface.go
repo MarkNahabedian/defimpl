@@ -22,7 +22,7 @@ type InterfaceDefinition struct {
 }
 
 func (idef *InterfaceDefinition) QualifiedName() string {
-	return fmt.Sprintf("%s.%s", idef.Package, idef.InterfaceName)
+	return util.ImplName(idef.Package, idef.InterfaceName)
 }
 
 func (idef *InterfaceDefinition) StructName() string {
