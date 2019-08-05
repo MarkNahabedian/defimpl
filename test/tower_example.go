@@ -2,5 +2,5 @@
 package test
 
 type Tower interface {
-	Height() float   // defimpl:"read height"
+	Height() float32   // defimpl:"read height"
 }
