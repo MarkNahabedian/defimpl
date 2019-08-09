@@ -35,6 +35,10 @@ func (idef *InterfaceDefinition) AddImports(ctx *context, in, out *ast.File) {
 	}
 }
 
+func (idef *InterfaceDefinition) DefinesStruct() bool {
+	return !idef.IsAbstract && (len(idef.SlotSpecs) > 0)
+}
+
 const InterfaceIsAbstractMarker string = "(ABSTRACT)"
 
 func isAbstractInterface(x *ast.GenDecl) bool {

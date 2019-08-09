@@ -59,7 +59,7 @@ func NewFile(ctx *context, astFile *ast.File) *File {
 }
 
 func (f *File) Write(ctx *context) error {
-	if len(f.Interfaces) == 0 {
+	if !f.AnyStructs() {
 		return nil
 	}
 	output := f.OutputFilePath()
@@ -71,6 +71,15 @@ func (f *File) Write(ctx *context) error {
 	out.Close()
 	fmt.Printf("Wrote %s\n", output)
 	return nil
+}
+
+func (f *File) AnyStructs() bool {
+	for _, i := range f.Interfaces {
+		if i.DefinesStruct() {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *File) GenerateCode(ctx *context) *ast.File {
@@ -100,34 +109,36 @@ var OutputFileTemplate *template.Template = template.Must(template.New("OutputFi
 package {{.Package}}
 	{{with $file := .}}
 		{{range .Interfaces}}
-			{{if not .IsAbstract}}
-				type {{.StructName}} struct {
-					{{range .SlotSpecs}}
+			{{if DefinesStruct}}
+				{{if not .IsAbstract}}
+					type {{.StructName}} struct {
+						{{range .SlotSpecs}}	
 						{{.Name}} {{ExprString .Type}}
-				 	{{end}}
-					{{- /* Fields required to support abstract inherited interfaces: */ -}}
-					{{with $thisInterface := .}}
-						{{range $inherited := .AllInherited}}
-							{{if $inherited.IsAbstract}}
-								// Fields to support the {{$inherited.InterfaceName}} interface:
-								{{range $inherited.SlotSpecs}}
-									{{.Name}} {{ExprString .Type}}
-							 	{{end}}
-							{{else}}
-								// Interface {{$inherited.InterfaceName}} has a concrete implementation
-								{{$inherited.StructName}}
+					 	{{end}}
+						{{- /* Fields required to support abstract inherited interfaces: */ -}}
+						{{with $thisInterface := .}}
+							{{range $inherited := .AllInherited}}
+								{{if $inherited.IsAbstract}}
+									// Fields to support the {{$inherited.InterfaceName}} interface:
+									{{range $inherited.SlotSpecs}}
+										{{.Name}} {{ExprString .Type}}
+								 	{{end}}
+								{{else}}
+									// Interface {{$inherited.InterfaceName}} has a concrete implementation
+									{{$inherited.StructName}}
+								{{end}}
 							{{end}}
 						{{end}}
-					{{end}}
-				}
-				{{with $interface := .}}
-					{{range .SlotSpecs}}
-						{{range .Verbs}}
+					}
+					{{with $interface := .}}
+						{{range .SlotSpecs}}
+							{{range .Verbs}}
+								{{.RunTemplate}}
+							{{end}}
+						{{end}}
+						{{range .InheritedVerbs}}
 							{{.RunTemplate}}
 						{{end}}
-					{{end}}
-					{{range .InheritedVerbs}}
-						{{.RunTemplate}}
 					{{end}}
 				{{end}}
 			{{end}}
