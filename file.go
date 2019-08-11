@@ -109,7 +109,7 @@ var OutputFileTemplate *template.Template = template.Must(template.New("OutputFi
 package {{.Package}}
 	{{with $file := .}}
 		{{range .Interfaces}}
-			{{if DefinesStruct}}
+			{{if .DefinesStruct}}
 				{{if not .IsAbstract}}
 					type {{.StructName}} struct {
 						{{range .SlotSpecs}}	
