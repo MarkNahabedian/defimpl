@@ -118,7 +118,8 @@ package {{.Package}}
 						{{- /* Fields required to support abstract inherited interfaces: */ -}}
 						{{with $thisInterface := .}}
 							{{range $inherited := .AllInherited}}
-								{{if $inherited.IsAbstract}}
+								{{if not $inherited.DefinesStruct}}
+									// NEED TO FIGURE OUT HOW TO USE STRUCT EMBEDDING.
 									// Fields to support the {{$inherited.InterfaceName}} interface:
 									{{range $inherited.SlotSpecs}}
 										{{.Name}} {{ExprString .Type}}
