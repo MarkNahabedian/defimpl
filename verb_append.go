@@ -1,6 +1,7 @@
 package main
 
 import "defimpl/util"
+import "fmt"
 import "go/ast"
 import "go/types"
 import "text/template"
@@ -11,7 +12,7 @@ func init() {
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)
 		if !ok {
-			return nil
+			return fmt.Errorf("Method type is %T", m)
 		}
 		if err := checkSignature(ftype, 1, 0); err != nil {
 			return err
@@ -19,7 +20,7 @@ func init() {
 		params := util.FieldListSlice(ftype.Params)
 		e, ok := params[0].Type.(*ast.Ellipsis)
 		if !ok {
-			return nil
+			return fmt.Errorf(`"append" verb requires ellipsis parameter`)
 		}
 		spec.CheckType(SliceOfType(e.Elt))
 		spec.Verbs = append(spec.Verbs, &VerbTemplateParameter{

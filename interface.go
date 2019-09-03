@@ -103,7 +103,7 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 		if len(m.Names) != 1 {
 			continue
 		}
-		verb, slot := methodDefimpl(m)
+		verb, slot := methodDefimpl(ctx, m)
 		if verb == nil {
 			continue
 		}
@@ -115,7 +115,7 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 
 // methodDefimpl returns the verb and slot name from a method's
 // defimpl comment if any.
-func methodDefimpl(method *ast.Field) (verb *VerbDefinition, slot_name string) {
+func methodDefimpl(ctx *context, method *ast.Field) (verb *VerbDefinition, slot_name string) {
 	if method.Comment == nil {
 		return nil, ""
 	}
@@ -124,10 +124,20 @@ func methodDefimpl(method *ast.Field) (verb *VerbDefinition, slot_name string) {
 		if !ok {
 			continue
 		}
+		pos := ctx.fset.Position(c.Slash)
 		split := strings.Split(val, " ")
-		vd := LookupVerb(split[0])
+		if len(split) != 2 {
+			fmt.Fprintf(os.Stderr, "Bad defimpl comment %s: %q\n", pos, c.Text)
+			continue
+		}
+		verb := split[0]
+		slot := split[1]
+		vd := LookupVerb(verb)
+		if verbose {
+			fmt.Printf("%s: %q %q %v\n", pos, verb, slot, vd != nil)
+		}
 		if vd != nil {
-			return vd, split[1]
+			return vd, slot
 		}
 	}
 	return nil, ""
@@ -191,6 +201,9 @@ func TypePackage(t ast.Expr) string {
 			return tp(e.Elt, true)
 		case *ast.StarExpr:
 			return tp(e.X, true)
+		case *ast.FuncType:
+			// Unnamed function, so no package.
+			return ""
 		default:
 			panic(fmt.Sprintf("TypePackage: unsupported expression type %T", t))
 		}

@@ -6,8 +6,10 @@ import "os"
 import "path/filepath"
 
 var show_verbs bool = false
+var verbose bool = false
 func init() {
 	flag.BoolVar(&show_verbs, "show_verbs", false, "Just list supported defimpl verbs and exit.")
+	flag.BoolVar(&verbose, "verbose", false, "Verbose output.")
 }
 
 func main() {
