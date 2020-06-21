@@ -2,25 +2,25 @@
 
 My background is as a Lisp programmer.  Objects in my programs model
 objects in the real world.  Real world objects have identity and so do
-the software objects which model them.  If I dent a car, a specific car
-gets dented.  To achieve this requires reference rather than value/copy
-semantics.
+the software objects with which I model them.  If I dent a car, a
+specific car gets dented.  To achieve this requires reference rather
+than value/copy semantics.
 
 Since I find the interface versus struct reference distinction
 confusing and would rather not think about it, I've chosen to define
-library interfaces that operate on interface objects.  Also, I find
-that I often refactor to pass interfaces rather than structs, so why
-not just always start that way.
+library interfaces that operate on interface objects.  Also, I've
+found that I often wind up refacroring to pass interfaces rather than
+struct pointers, so why not just always start that way.
 
 Each concrete interface requires at least one implementation though,
 and those implementations tend to be boilerplate code that is boring
 and tedious to implement and maintain.  I'd like to automatically
-generate a canonical implementation of each interface based on some
-direction in the interface's type definition.
+generate a canonical implementation of each concrete interface based
+on some direction in the interface's type definition.
 
 Though Go allows fields in struct definitions to have a tag which
 various libraies can choose to interpret in some way, this is
-apparently not allowed for interface fields (method declarations).
+apparently not allowed for interface method declarations.
 
 The defimpl binary is a go code preprocessor which reads a source
 file, and produces a new source file which contains a struct
@@ -34,8 +34,8 @@ because interface type definitions do not support tags.  These
 comments employ the same canonical syntax as struct tags so that we
 can leverage the struct tag parsing code.
 
-For any interface method which is meant to read or modify some slot,
-that method sould have a signature appropriate to its intended use and
+For any interface method which is meant to read or modify some field,
+that method sould have a signature appropriate to its intended use, and
 a comment of the form
 
 <pre>
@@ -59,7 +59,8 @@ type Tower interface {
 
 then running
 
-<pre defimple tower.go
+<pre>
+defimple tower.go
 </pre>
 
 would generate the code
