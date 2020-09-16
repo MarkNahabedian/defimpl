@@ -136,9 +136,9 @@ import "defimpl/runtime"
 						{{end}}
 					}
 					func init() {
-						var inter {{.InterfaceName}}
+						inter := reflect.TypeOf(func(t {{.InterfaceName}}){}).In(0)
 						var impl *{{.StructName}}
-						runtime.Register(reflect.TypeOf(inter), reflect.TypeOf(impl))
+						runtime.Register(inter, reflect.TypeOf(impl))
 					}
 					{{with $interface := .}}
 						{{range .SlotSpecs}}
