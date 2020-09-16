@@ -3,6 +3,7 @@
 
 package runtime
 
+import "fmt"
 import "reflect"
 
 
@@ -34,5 +35,16 @@ func ImplToInterface(impl reflect.Type) reflect.Type {
 func Register(inter reflect.Type, impl reflect.Type) {
 	interfaceToImpl[inter] = impl
 	implToInterface[impl] = inter
+}
+
+func Dump() {
+	fmt.Println("interfaceToImpl:")
+	for k, v := range interfaceToImpl {
+		fmt.Println("\t", k, "\t", v)
+	}
+	fmt.Println("implToInterface:")
+	for k, v := range implToInterface {
+		fmt.Println("\t", k, "\t", v)
+	}
 }
 
