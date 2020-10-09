@@ -135,6 +135,7 @@ import "defimpl/runtime"
 							{{end}}
 						{{end}}
 					}
+					var _ {{.InterfaceName}} = (*{{.StructName}})(nil)
 					func init() {
 						inter := reflect.TypeOf(func(t {{.InterfaceName}}){}).In(0)
 						var impl *{{.StructName}}
