@@ -7,7 +7,10 @@ import "text/template"
 import "defimpl/util"
 
 func init() {
-	vd := &VerbDefinition{Verb: "iterate"}
+	vd := &VerbDefinition{
+		Verb:         "iterate",
+		ParamCount:   1,
+	}
 	vd.Description = "Applies the specified function to each element of the slice-valued slot until the function returns false."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)

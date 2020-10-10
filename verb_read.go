@@ -6,7 +6,10 @@ import "go/types"
 import "text/template"
 
 func init() {
-	vd := &VerbDefinition{Verb: "read"}
+	vd := &VerbDefinition{
+		Verb:         "read",
+		ParamCount:   1,
+	}
 	vd.Description = "returns the value of the field."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)

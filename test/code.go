@@ -10,7 +10,8 @@ import tmpl "text/template"
 
 type Thing interface {
 	// name
-	Name() string   // defimpl:"read name"
+	Thing()          // defimpl:"discriminate"
+	Name() string    // defimpl:"read name"
 	SetName(string) // defimpl:"set name"
 	// related
 	AddRelated(...Thing)        // defimpl:"append related"

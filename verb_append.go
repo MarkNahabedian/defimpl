@@ -7,7 +7,10 @@ import "go/types"
 import "text/template"
 
 func init() {
-	vd := &VerbDefinition{Verb: "append"}
+	vd := &VerbDefinition{
+		Verb:         "append",
+		ParamCount:   1,
+	}
 	vd.Description = "appends the specified value to the field."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)

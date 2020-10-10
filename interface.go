@@ -77,7 +77,7 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 			ctx.fset.Position(gd.TokPos).String()))
 	}
 	id := &InterfaceDefinition{
-		// It appears that the parser associates to comment group with
+		// It appears that the parser associates the comment group with
 		// the outer GenDecl rather than with the TypeSpec.
 		IsAbstract:    isAbstractInterface(gd),
 		InterfaceType: it,
@@ -126,13 +126,25 @@ func methodDefimpl(ctx *context, method *ast.Field) (verb *VerbDefinition, slot_
 		}
 		pos := ctx.fset.Position(c.Slash)
 		split := strings.Split(val, " ")
-		if len(split) != 2 {
-			fmt.Fprintf(os.Stderr, "Bad defimpl comment %s: %q\n", pos, c.Text)
+		if len(split) < 1 {
+			fmt.Fprintf(os.Stderr, "No verb in defimpl comment %s: %q\n", pos, c.Text)
 			continue
 		}
 		verb := split[0]
-		slot := split[1]
 		vd := LookupVerb(verb)
+		if vd == nil {
+			fmt.Fprintf(os.Stderr, "Unknown verb %q in defimpl comment %s: %q\n", verb, pos, c.Text)
+			continue			
+		}
+		if len(split) != vd.ParamCount + 1 {
+			fmt.Fprintf(os.Stderr, "defimpl verb %q verb expects %d parameters:",
+				verb, vd.ParamCount, pos, c.Text)
+			continue
+		}
+		slot := ""
+		if len(split) > 1 {
+			slot = split[1]
+		}
 		if verbose {
 			fmt.Printf("%s: %q %q %v\n", pos, verb, slot, vd != nil)
 		}
@@ -187,6 +199,9 @@ func (spec *slotSpec) AddImports(ctx *context, in, out *ast.File) {
 // TypePackage returns the package name if the Expr (which should
 // identify a type) specifies one.
 func TypePackage(t ast.Expr) string {
+	if t == nil {
+		return ""
+	}
 	var tp func(ast.Expr, bool) string
 	tp = func(t ast.Expr, top bool) string {
 		switch e := t.(type) {

@@ -117,7 +117,9 @@ import "defimpl/runtime"
 				{{if not .IsAbstract}}
 					type {{.StructName}} struct {
 						{{range .SlotSpecs}}
-						{{.Name}} {{ExprString .Type}}
+						        {{if not (eq .Name "") }}
+							        {{.Name}} {{ExprString .Type}}
+							{{end}}
 					 	{{end}}
 						{{- /* Fields required to support abstract inherited interfaces: */ -}}
 						{{with $thisInterface := .}}

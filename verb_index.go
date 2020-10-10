@@ -7,7 +7,10 @@ import "go/types"
 import "text/template"
 
 func init() {
-	vd := &VerbDefinition{Verb: "index"}
+	vd := &VerbDefinition{
+		Verb:         "index",
+		ParamCount:   1,
+	}
 	vd.Description = "returns the element of the specified slice valued field at the specified (zero based) index."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)

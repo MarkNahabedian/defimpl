@@ -6,7 +6,10 @@ import "go/types"
 import "text/template"
 
 func init() {
-	vd := &VerbDefinition{Verb: "length"}
+	vd := &VerbDefinition{
+		Verb:         "length",
+		ParamCount:   1,
+	}
 	vd.Description = "returns the length of the specified slice valued field."
 	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
 		ftype, ok := m.Type.(*ast.FuncType)

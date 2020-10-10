@@ -31,6 +31,8 @@ func (v *VerbTemplateParameter) DocComment() string {
 type VerbDefinition struct {
 	Verb        string
 	Description string
+	// The number of parameters that the verb expects:
+	ParamCount    int
 	// Assimilate assimilates the method into the slotSpec if appropriate.
 	Assimilate func(*context, *VerbDefinition, *slotSpec, *InterfaceDefinition, *ast.Field) error
 	// Template will generate the code associated with this Verb.
