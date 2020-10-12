@@ -10,6 +10,8 @@ import "os"
 import "path/filepath"
 import "strings"
 import "text/template"
+import "defimpl/util"
+
 
 // File represents a single file to be processed.
 type File struct {
@@ -30,15 +32,6 @@ func (f *File) OutputFilePath() string {
 
 func IsOutputFilePath(f string) bool {
 	return strings.HasPrefix(filepath.Base(f), "impl_")
-}
-
-// AddImports addresses the need to include imports for captured
-// refernces like type definitions.
-// It will need to be used for each types.Type that is included in the output file.
-func (f *File) AddImports(ctx *context, astFile *ast.File) {
-	for _, i := range f.Interfaces {
-		i.AddImports(ctx, f.AstFile, astFile)
-	}
 }
 
 // NewFile returns a File object for the given ast.File.
@@ -67,7 +60,7 @@ func (f *File) Write(ctx *context) error {
 	if err != nil {
 		return fmt.Errorf("Can't create %s: %s", output, err)
 	}
-	format.Node(out, ctx.fset, f.GenerateCode(ctx))
+	format.Node(out, ctx.fset, f.GenerateCode(ctx, output))
 	out.Close()
 	fmt.Printf("Wrote %s\n", output)
 	return nil
@@ -82,18 +75,21 @@ func (f *File) AnyStructs() bool {
 	return false
 }
 
-func (f *File) GenerateCode(ctx *context) *ast.File {
+func (f *File) GenerateCode(ctx *context, filepath string) *ast.File {
 	writer := bytes.NewBufferString("")
 	err := OutputFileTemplate.Execute(writer, f)
 	if err != nil {
 		panic(err)
 	}
-	parsed, err := parser.ParseFile(ctx.fset, "", writer.String(), parser.ParseComments)
+	parsed, err := parser.ParseFile(ctx.fset, filepath, writer.String(), parser.ParseComments)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", writer.String())
+		fmt.Fprintf(os.Stderr, "defimpl: %s\n", writer.String())
 		panic(err)
 	}
-	f.AddImports(ctx, parsed)
+	errs := util.EnsureImports(ctx.fset, f.AstFile, parsed)
+	for _, err := range errs {
+		fmt.Fprintf(os.Stderr, "defimpl: %s\n", err)
+	}
 	return parsed
 }
 

@@ -5,14 +5,17 @@ package test
 
 import "reflect"
 import tmpl "text/template"
+import "go/ast"
 
 //go:generate defimpl
 
 type Thing interface {
 	// name
-	Thing()          // defimpl:"discriminate"
-	Name() string    // defimpl:"read name"
-	SetName(string) // defimpl:"set name"
+	Thing()                     // defimpl:"discriminate"
+	Name() string               // defimpl:"read name"
+	SetName(string)             // defimpl:"set name"
+	Node() ast.Node             // defimpl:"read node"
+	SetTNode(ast.Node)          // defimpl:"set node"
 	// related
 	AddRelated(...Thing)        // defimpl:"append related"
 	GetRelated(int) Thing       // defimpl:"index related"
@@ -50,3 +53,4 @@ type Gazong interface {
 	Sub1
 	Smug() bool     // defimpl:"read smug"
 }
+

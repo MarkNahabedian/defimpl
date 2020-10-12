@@ -28,7 +28,7 @@ func main() {
 	}
 	ctx, err := NewContext(filepath.Clean(afp))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "defimpl: %s\n", err)
 		return
 	}
 	ctx.DoInheritance()

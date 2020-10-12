@@ -30,7 +30,7 @@ func (idef *InterfaceDefinition) GetInherited(ctx *context) []*InterfaceDefiniti
 		}
 		for _, c := range circular {
 			if idef == c {
-				fmt.Fprintf(os.Stderr, "Circular interface definitions: %s within %s",
+				fmt.Fprintf(os.Stderr, "defimpl: Circular interface definitions: %s within %s",
 					idef.QualifiedName(), c.QualifiedName())
 				return []*InterfaceDefinition{}
 			}
@@ -48,7 +48,7 @@ func (idef *InterfaceDefinition) GetInherited(ctx *context) []*InterfaceDefiniti
 		for _, inherited := range idef.Inherited {
 			ih := ctx.IDLookup(inherited)
 			if ih == nil {
-				fmt.Fprintf(os.Stderr, "For interface %s: Can't find inherited interface %s.\n",
+				fmt.Fprintf(os.Stderr, "defimpl: For interface %s: Can't find inherited interface %s.\n",
 					idef.QualifiedName(), inherited)
 				continue
 			}

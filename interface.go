@@ -5,11 +5,9 @@ import "fmt"
 import "go/ast"
 import "go/token"
 import "os"
-import "path/filepath"
 import "reflect"
-import "strconv"
 import "strings"
-import "golang.org/x/tools/go/ast/astutil"
+
 
 type InterfaceDefinition struct {
 	IsAbstract    bool
@@ -27,12 +25,6 @@ func (idef *InterfaceDefinition) QualifiedName() string {
 
 func (idef *InterfaceDefinition) StructName() string {
 	return idef.InterfaceName + "Impl"
-}
-
-func (idef *InterfaceDefinition) AddImports(ctx *context, in, out *ast.File) {
-	for _, ss := range idef.SlotSpecs {
-		ss.AddImports(ctx, in, out)
-	}
 }
 
 func (idef *InterfaceDefinition) DefinesStruct() bool {
@@ -127,13 +119,13 @@ func methodDefimpl(ctx *context, method *ast.Field) (verb *VerbDefinition, slot_
 		pos := ctx.fset.Position(c.Slash)
 		split := strings.Split(val, " ")
 		if len(split) < 1 {
-			fmt.Fprintf(os.Stderr, "No verb in defimpl comment %s: %q\n", pos, c.Text)
+			fmt.Fprintf(os.Stderr, "defimpl: No verb in defimpl comment %s: %q\n", pos, c.Text)
 			continue
 		}
 		verb := split[0]
 		vd := LookupVerb(verb)
 		if vd == nil {
-			fmt.Fprintf(os.Stderr, "Unknown verb %q in defimpl comment %s: %q\n", verb, pos, c.Text)
+			fmt.Fprintf(os.Stderr, "defimpl: Unknown verb %q in defimpl comment %s: %q\n", verb, pos, c.Text)
 			continue			
 		}
 		if len(split) != vd.ParamCount + 1 {
@@ -183,17 +175,9 @@ func (spec *slotSpec) assimilate(ctx *context, id *InterfaceDefinition, m *ast.F
 		return ctx.fset.Position(m.Comment.Pos())
 	}
 	if err := verb.Assimilate(ctx, verb, spec, id, m); err != nil {
-		fmt.Fprintf(os.Stderr, "%s at %s\n", err, errorPosition().String())
+		fmt.Fprintf(os.Stderr, "defimpl: %s at %s\n", err, errorPosition().String())
 		return
 	}
-}
-
-func (spec *slotSpec) AddImports(ctx *context, in, out *ast.File) {
-	p := TypePackage(spec.Type)
-	if p == "" {
-		return
-	}
-	AddImport(ctx.fset, in, out, p)
 }
 
 // TypePackage returns the package name if the Expr (which should
@@ -226,27 +210,3 @@ func TypePackage(t ast.Expr) string {
 	return tp(t, true)
 }
 
-func AddImport(fset *token.FileSet, in, out *ast.File, pkg_identifier string) {
-	for _, para := range astutil.Imports(fset, in) {
-		for _, ispec := range para {
-			unq, err := strconv.Unquote(ispec.Path.Value)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				continue
-			}
-			if ispec.Name == nil {
-				if filepath.Base(unq) == pkg_identifier {
-					astutil.AddImport(fset, out, unq)
-					return
-				}
-			} else {
-				if  ispec.Name.Name == pkg_identifier {
-					astutil.AddNamedImport(fset, out, pkg_identifier, unq)
-					return
-				}
-			}
-		}
-	}
-	panic(fmt.Sprintf("Can't find package %s in %s",
-		pkg_identifier, fset.Position(in.Package).Filename))
-}
