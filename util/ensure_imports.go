@@ -48,12 +48,12 @@ type visitor struct {
 }
 
 
-func leftmost(sel *ast.SelectorExpr) *ast.Ident {
+func LeftmostSelector(sel *ast.SelectorExpr) *ast.Ident {
 	switch e := sel.X.(type) {
 	case *ast.Ident:
 		return e
 	case *ast.SelectorExpr:
-		return leftmost(e)
+		return LeftmostSelector(e)
 	default:
 		return nil
 	}
@@ -63,7 +63,7 @@ func leftmost(sel *ast.SelectorExpr) *ast.Ident {
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.SelectorExpr:
-		left := leftmost(n)
+		left := LeftmostSelector(n)
 		if left != nil {
 			// left might be a package reference
 			for _, ispec := range v.in.Imports {
