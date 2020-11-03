@@ -16,6 +16,7 @@ func (key *IDKey) String() string {
 	return fmt.Sprintf("%s.%s", key.Package, key.Name)
 }
 
+// ExprToIDKey derives an IDKey from the specified expression.
 func ExprToIDKey(e ast.Expr, defaultPkg string) *IDKey {
 	var etk func (recursive bool, e ast.Expr, defaultPkg string) *IDKey
 	etk = func(recursive bool, e ast.Expr, defaultPkg string) *IDKey {
@@ -41,6 +42,8 @@ func ExprToIDKey(e ast.Expr, defaultPkg string) *IDKey {
 	return etk(false, e, defaultPkg)
 }
 
+// IDLookup searches the files of the context for an
+// InterfaceDefinition matching key.
 func (ctx *context) IDLookup(key *IDKey) *InterfaceDefinition {
 	for _, f := range ctx.files {
 		found := f.IDLookup(key)
@@ -51,6 +54,7 @@ func (ctx *context) IDLookup(key *IDKey) *InterfaceDefinition {
 	return nil
 }
 
+// IDLookup searches the File for an InterfaceDefinition matching key.
 func (f *File) IDLookup(key *IDKey) *InterfaceDefinition {
 	for _, i := range f.Interfaces {
 		found := i.IDLookup(key)
@@ -61,6 +65,8 @@ func (f *File) IDLookup(key *IDKey) *InterfaceDefinition {
 	return nil
 }
 
+// IDLookup searches returns the interface definition if it matches
+// key.  Otherwise it returns nil.
 func (i *InterfaceDefinition) IDLookup(key *IDKey) *InterfaceDefinition {
 	if i.InterfaceName != key.Name {
 		return nil
