@@ -107,29 +107,31 @@ package {{.Package}}
 import "reflect"
 import "defimpl/runtime"
 
-	{{with $file := .}}
-		{{range .Interfaces}}
-			{{if .DefinesStruct}}
-				{{if not .IsAbstract}}
+	{{- with $file := . -}}
+		{{- range .Interfaces -}}
+			{{- if .DefinesStruct -}}
+				{{- if not .IsAbstract}}
 					type {{.StructName}} struct {
-						{{range .SlotSpecs}}
-						        {{if not (eq .Name "") }}
+						{{- range .SlotSpecs -}}
+						        {{- if not (eq .Name "") }}
 							        {{.Name}} {{ExprString .Type}}
-							{{end}}
+							{{end -}}
 					 	{{end}}
 						{{- /* Fields required to support abstract inherited interfaces: */ -}}
 						{{with $thisInterface := .}}
-							{{range $inherited := .AllInherited}}
-								{{if not $inherited.DefinesStruct}}
-									// NEED TO FIGURE OUT HOW TO USE STRUCT EMBEDDING.
+							{{- if gt (len .AllInherited) 0}}
+								// NEED TO FIGURE OUT HOW TO USE STRUCT EMBEDDING.
+							{{end -}}
+							{{- range $inherited := .AllInherited -}}
+								{{- if not $inherited.DefinesStruct}}
 									// Fields to support the {{$inherited.InterfaceName}} interface:
 									{{range $inherited.SlotSpecs}}
 										{{.Name}} {{ExprString .Type}}
 								 	{{end}}
-								{{else}}
+								{{- else -}}
 									// Interface {{$inherited.InterfaceName}} has a concrete implementation
 									{{$inherited.StructName}}
-								{{end}}
+								{{end -}}
 							{{end}}
 						{{end}}
 					}
@@ -149,8 +151,8 @@ import "defimpl/runtime"
 							{{.RunTemplate}}
 						{{end}}
 					{{end}}
-				{{end}}
-			{{end}}
-		{{end}}
-	{{end}}
+				{{- end -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end}}
 `)) // end template
