@@ -36,7 +36,7 @@ func init() {
 		})
 		return nil
 	}
-	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
+	vd.TopLevelTemplate = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
 		"ExprString": types.ExprString,
 	}).Parse(`
 		{{.DocComment}}

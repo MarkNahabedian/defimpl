@@ -17,7 +17,7 @@ type VerbTemplateParameter struct {
 
 func (v *VerbTemplateParameter) RunTemplate() string {
 	writer := bytes.NewBufferString("")
-	err := v.Verb.Template.Execute(writer, v)
+	err := v.Verb.TopLevelTemplate.Execute(writer, v)
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ type VerbDefinition struct {
 	Assimilate func(*context, *VerbDefinition, *slotSpec, *InterfaceDefinition, *ast.Field) error
 	// Template will generate the code associated with this Verb.
 	// The template will be passed a VerbTemplateParameter as its parameter.
-	Template *template.Template
+	TopLevelTemplate *template.Template
 }
 
 var VerbDefinitions map[string]*VerbDefinition = map[string]*VerbDefinition{}
