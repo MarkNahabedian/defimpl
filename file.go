@@ -107,52 +107,50 @@ package {{.Package}}
 import "reflect"
 import "defimpl/runtime"
 
-	{{- with $file := . -}}
-		{{- range .Interfaces -}}
-			{{- if .DefinesStruct -}}
-				{{- if not .IsAbstract}}
-					type {{.StructName}} struct {
-						{{- range .SlotSpecs -}}
-						        {{- if not (eq .Name "") }}
-							        {{.Name}} {{ExprString .Type}}
-							{{end -}}
-					 	{{end}}
-						{{- /* Fields required to support abstract inherited interfaces: */ -}}
-						{{with $thisInterface := .}}
-							{{- if gt (len .AllInherited) 0}}
-								// NEED TO FIGURE OUT HOW TO USE STRUCT EMBEDDING.
-							{{end -}}
-							{{- range $inherited := .AllInherited -}}
-								{{- if not $inherited.DefinesStruct}}
-									// Fields to support the {{$inherited.InterfaceName}} interface:
-									{{range $inherited.SlotSpecs}}
-										{{.Name}} {{ExprString .Type}}
-								 	{{end}}
-								{{- else -}}
-									// Interface {{$inherited.InterfaceName}} has a concrete implementation
-									{{$inherited.StructName}}
-								{{end -}}
-							{{end}}
-						{{end}}
-					}
-					var _ {{.InterfaceName}} = (*{{.StructName}})(nil)
-					func init() {
-						inter := reflect.TypeOf(func(t {{.InterfaceName}}){}).In(0)
-						var impl *{{.StructName}}
-						runtime.Register(inter, reflect.TypeOf(impl))
-					}
-					{{with $interface := .}}
-						{{range .SlotSpecs}}
-							{{range .Verbs}}
-								{{.RunTemplate}}
-							{{end}}
-						{{end}}
-						{{range .InheritedVerbs}}
-							{{.RunTemplate}}
-						{{end}}
+{{with $file := . -}}
+	{{- range .Interfaces -}}
+		{{- if .DefinesStruct -}}
+			type {{.StructName}} struct {
+				{{- range .SlotSpecs -}}
+				        {{- if not (eq .Name "") }}
+					        {{.Name}} {{ExprString .Type}}
+					{{- end -}}
+			 	{{- end -}}
+				{{- /* Fields required to support abstract inherited interfaces: */ -}}
+				{{with $thisInterface := .}}
+					{{- if gt (len .AllInherited) 0}}
+						// NEED TO FIGURE OUT HOW TO USE STRUCT EMBEDDING.
+					{{end -}}
+					{{- range $inherited := .AllInherited -}}
+						{{- if not $inherited.DefinesStruct}}
+							// Fields to support the {{$inherited.InterfaceName}} interface:
+							{{range $inherited.SlotSpecs}}
+								{{.Name}} {{ExprString .Type}}
+						 	{{end}}
+						{{- else -}}
+							// Interface {{$inherited.InterfaceName}} has a concrete implementation
+							{{$inherited.StructName}}
+						{{end -}}
 					{{end}}
+				{{end}}
+			}
+			var _ {{.InterfaceName}} = (*{{.StructName}})(nil)
+			func init() {
+				inter := reflect.TypeOf(func(t {{.InterfaceName}}){}).In(0)
+				var impl *{{.StructName}}
+				runtime.Register(inter, reflect.TypeOf(impl))
+			}
+			{{with $interface := .}}
+				{{- range .SlotSpecs}}
+					{{- range .Verbs}}
+						{{.RunTemplate}}
+					{{- end -}}
+				{{- end -}}
+				{{range .InheritedVerbs}}
+					{{.RunTemplate}}
 				{{- end -}}
 			{{- end -}}
 		{{- end -}}
-	{{- end}}
+	{{- end -}}
+{{- end}}
 `)) // end template
