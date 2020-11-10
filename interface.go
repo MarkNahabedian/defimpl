@@ -129,7 +129,7 @@ func methodDefimpl(ctx *context, method *ast.Field) (verb *VerbDefinition, slot_
 			continue			
 		}
 		if len(split) != vd.ParamCount + 1 {
-			fmt.Fprintf(os.Stderr, "defimpl verb %q verb expects %d parameters:",
+			fmt.Fprintf(os.Stderr, "defimpl verb %q expects %d parameters: %s %q",
 				verb, vd.ParamCount, pos, c.Text)
 			continue
 		}
