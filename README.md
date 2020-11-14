@@ -1,12 +1,15 @@
 <h1>defimpl</h1>
 
+
+<h2>Motivation</h2>
+
 My background is as a Lisp programmer.  Objects in my programs model
 objects in the real world.  Real world objects have identity and so do
 the software objects with which I model them.  If I dent a car, a
 specific car gets dented.  To achieve this requires reference rather
 than value/copy semantics.
 
-Since I find the interface versus struct reference distinction
+Since I find Go's interface versus struct reference distinction
 confusing and would rather not think about it, I've chosen to define
 library interfaces that operate on interface objects.  Also, I've
 found that I often wind up refacroring to pass interfaces rather than
@@ -18,21 +21,29 @@ and tedious to implement and maintain.  I'd like to automatically
 generate a canonical implementation of each concrete interface based
 on some direction in the interface's type definition.
 
-Though Go allows fields in struct definitions to have a tag which
-various libraies can choose to interpret in some way, this is
-apparently not allowed for interface method declarations.
+
+<h2>Usage</h2>
 
 The defimpl binary is a go code preprocessor which reads a source
 file, and produces a new source file which contains a struct
 definition to serve as an implementation of each interface definition
 in the input file, and the methods to support that implementation.
 
+Though Go allows fields in struct definitions to have a tag which
+various libraies can choose to interpret in some way, this is
+apparently not allowed for interface method declarations.
+
 Each field (method declaration) in an input interface definition can
 have comments to inform defimpl of the struct methods to be generated
 and the struct fields on which they operate.  These are comments
-because interface type definitions do not support tags.  These
-comments employ the same canonical syntax as struct tags so that we
-can leverage the struct tag parsing code.
+because interface type definitions do not support tags in the way
+struct definitions do.  These comments employ the same canonical
+syntax as struct tags so that we can leverage the struct tag parsing
+code.
+
+If an interface definition contains no defimpl comments of has a
+comment containing "(ABSTRACT)" then no implementation struct will be
+defined for it.
 
 For any interface method which is meant to read or modify some field,
 that method sould have a signature appropriate to its intended use, and
