@@ -31,6 +31,21 @@ func (idef *InterfaceDefinition) DefinesStruct() bool {
 	return !idef.IsAbstract && (len(idef.SlotSpecs) > 0)
 }
 
+func (idef *InterfaceDefinition) Fields() []*ast.Field {
+	return util.FieldListSlice(idef.InterfaceType.Methods)
+}
+
+func (idef *InterfaceDefinition) GetSpec(name string) *slotSpec {
+	for _, sspec := range id.SlotSpecs {
+		if sspec.Name == name {
+			return sspec
+		}
+	}
+	spec := &slotSpec{Name: name}
+	id.SlotSpecs = append(id.SlotSpecs, spec)
+	return spec
+}
+
 const InterfaceIsAbstractMarker string = "(ABSTRACT)"
 
 func isAbstractInterface(x *ast.GenDecl) bool {
@@ -47,6 +62,7 @@ func isAbstractInterface(x *ast.GenDecl) bool {
 	}
 	return hasAbstract(x.Doc)
 }
+
 
 // NewInterface returns a new InterfaceDefinition if decl represents
 // an interface definition, otherwise it returns nil.
@@ -78,17 +94,7 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 		Package:       pkg,
 		Inherited:     []*IDKey{},
 	}
-	getSpec := func(name string) *slotSpec {
-		for _, sspec := range id.SlotSpecs {
-			if sspec.Name == name {
-				return sspec
-			}
-		}
-		spec := &slotSpec{Name: name}
-		id.SlotSpecs = append(id.SlotSpecs, spec)
-		return spec
-	}
-	for _, m := range util.FieldListSlice(it.Methods) {
+	for _, m := range id.Fields() {
 		if len(m.Names) == 0 {
 			id.Inherited = append(id.Inherited, ExprToIDKey(m.Type, id.Package))
 		}
@@ -99,7 +105,7 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 		if verb == nil {
 			continue
 		}
-		spec := getSpec(slot)
+		spec := id.GetSpec(slot)
 		spec.assimilate(ctx, id, m, verb)
 	}
 	return id
