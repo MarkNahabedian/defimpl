@@ -23,10 +23,14 @@ func (idef *InterfaceDefinition) QualifiedName() string {
 	return util.ImplName(idef.Package, idef.InterfaceName)
 }
 
+// StructName returns the default name for the implementing struct for
+// the interface represented by this InterfaceDefinition.
 func (idef *InterfaceDefinition) StructName() string {
 	return idef.InterfaceName + "Impl"
 }
 
+// DefinesStruct returns true if an implementing sruct should be
+// defined for the interface represented by this InterfaceDefinition.
 func (idef *InterfaceDefinition) DefinesStruct() bool {
 	return !idef.IsAbstract && (len(idef.SlotSpecs) > 0)
 }
@@ -35,6 +39,7 @@ func (idef *InterfaceDefinition) Fields() []*ast.Field {
 	return util.FieldListSlice(idef.InterfaceType.Methods)
 }
 
+// getSpec finds or creates a slotSpec for the specified slot name.
 func (idef *InterfaceDefinition) GetSpec(name string) *slotSpec {
 	for _, sspec := range id.SlotSpecs {
 		if sspec.Name == name {
@@ -48,6 +53,8 @@ func (idef *InterfaceDefinition) GetSpec(name string) *slotSpec {
 
 const InterfaceIsAbstractMarker string = "(ABSTRACT)"
 
+// isAbstractInterface returns true if the declaration -- which should
+// define an interface -- has a comment with the "abstract" token.
 func isAbstractInterface(x *ast.GenDecl) bool {
 	var hasAbstract = func(cmnt *ast.CommentGroup) bool {
 		if cmnt == nil || cmnt.List == nil {
@@ -95,6 +102,9 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 		Inherited:     []*IDKey{},
 	}
 	for _, m := range id.Fields() {
+		// We need to do something more clever for inheritance
+		// support.  Maybe we should dispatch on verb
+		// definition here?
 		if len(m.Names) == 0 {
 			id.Inherited = append(id.Inherited, ExprToIDKey(m.Type, id.Package))
 		}
