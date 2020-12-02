@@ -40,6 +40,8 @@ func TestASTMatch(t *testing.T) {
 	scratchpad :=  map[string]interface{}{}
 	matched, err := AstMatch(expectType, gotType, scratchpad)
 	t.Logf("AstMatch result %v %v %#v", matched, err, scratchpad)
-	t.Fail()
+	if !matched {
+		t.Errorf("Didn't match: %v, %v", expectType, gotType)
+	}
 }
 
