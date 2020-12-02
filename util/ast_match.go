@@ -32,7 +32,7 @@ func AstMatch(pattern interface{}, candidate interface{}, scratchpad map[string]
 					return false, fmt.Errorf("scratchpad[%s] is %T, not string", p.Name, val)
 				}
 			} else {
-				scratchpad[p.Name] = c.Name
+				scratchpad[p.Name] = c
 			}
 		}
 	default:
