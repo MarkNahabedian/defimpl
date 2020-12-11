@@ -1,65 +1,108 @@
 package main
 
 import "bytes"
-import "defimpl/util"
 import "fmt"
+import "os"
+import "reflect"
+import "strings"
 import "go/ast"
 import "text/template"
 
-type VerbTemplateParameter struct {
-	Verb          *VerbDefinition
-	InterfaceName string
-	StructName    string
-	MethodName    string
-	SlotName      string
-	Type          ast.Expr // types.Type
+
+// MethodTemplateParameter codifies the parameter of the
+// (VerbDefinition).MethodTemplate.
+type MethodTemplateParameter interface {
+	MethodName() string
+	InterfaceName() string
+	StructName() string
+	SlotName() string
 }
 
-func (v *VerbTemplateParameter) RunTemplate() string {
-	writer := bytes.NewBufferString("")
-	err := v.Verb.TopLevelTemplate.Execute(writer, v)
-	if err != nil {
-		panic(err)
+// VerbPhrase represents a single verb and its parameters from a Field
+// in an interface definition.
+type VerbPhrase interface {
+	// Verb returns the VerbDefinition that created this VerbPhrase.
+	Verb() VerbDefinition
+	// Tag returns the string that identifies a Verb in a tag
+	// comment.
+	Tag() string
+	// MethodName returns the function name of the method
+	// associated with this verb phrase.
+	MethodName() string
+	// InterfaceDefinition returns the InterfaceDefinition which
+	// represents the interface type declaration that this
+	// VerbPhrase's Field appears in.
+	InterfaceDefinition() *InterfaceDefinition
+	// Field returns the ast.Field whose tag comment the verb
+	// phrase is derived from.
+	Field() *ast.Field
+
+	// GlobalDefinitions returns the global code that should be
+	// included to support the VerbPhrase.
+	// GlobalDefinitions() (string, error)
+
+	// The following methods are a convenience for implementing
+	// MethodTemplate templates.  Such templates are executed with
+	// either a VerbPhrase or a MethodTemplateParameter (see
+	// CheckSignatures).
+
+	// InterfaceName returns the InterfaceName from the InterfaceDefinition.
+	InterfaceName() string
+	// StructName returns the StructName from the InterfaceDefinition
+	StructName() string
+}
+
+func GetVerbPhrase(ctx *context, idef *InterfaceDefinition, method *ast.Field) {
+	if method.Comment == nil {
+		return
 	}
-	return writer.String()
-}
-
-func (v *VerbTemplateParameter) DocComment() string {
-	return fmt.Sprintf("// %s is part of the %s interface.", v.MethodName, v.InterfaceName)
-}
-
-type VerbDefinition struct {
-	Verb        string
-	Description string
-	// The number of parameters that the verb expects:
-	ParamCount    int
-	// Assimilate assimilates the method into the slotSpec if appropriate.
-	Assimilate func(*context, *VerbDefinition, *slotSpec, *InterfaceDefinition, *ast.Field) error
-	// Template will generate the code associated with this Verb.
-	// The template will be passed a VerbTemplateParameter as its parameter.
-	TopLevelTemplate *template.Template
-}
-
-var VerbDefinitions map[string]*VerbDefinition = map[string]*VerbDefinition{}
-
-func LookupVerb(verb string) *VerbDefinition {
-	vd, ok := VerbDefinitions[verb]
-	if ok {
-		return vd
+	for _, c := range method.Comment.List {
+		val, ok := reflect.StructTag(c.Text[2:]).Lookup("defimpl")
+		if !ok {
+			continue
+		}
+		split := strings.Split(val, " ")
+		if len(split) < 1 {
+			continue
+		}
+		// constructor, ok := Verbs[split[0]]
+		vd, ok := VerbDefinitions[split[0]]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "defimpl: Unknown verb %q in defimpl comment %s: %q\n",
+				split[0], c.Slash, c.Text)
+			continue
+		}
+		// vp, err := constructor(ctx, idef, method, c)
+		vp, err := vd.NewVerbPhrase(ctx, idef, method, c)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+		} else {
+			if vp != nil {
+				idef.VerbPhrases = append(idef.VerbPhrases, vp)
+			}
+		}
 	}
-	return nil
 }
 
-// checkSignature returns an error if fd has the wrong number of parameters
-// or return values.
-func checkSignature(fd *ast.FuncType, paramCount, resultCount int) error {
-	if len(util.FieldListSlice(fd.Params)) != paramCount ||
-		len(util.FieldListSlice(fd.Results)) != resultCount {
-		return fmt.Errorf("alleged method has inappropriate signature\n")
+// MethodDefinition returns the definition of the method for this verb
+// based on the Verb.MethodTemplate.
+func MethodDefinition(vp VerbPhrase) (string, error) {
+	w := &bytes.Buffer{}
+	if err := vp.Verb().MethodTemplate().Execute(w, vp); err != nil {
+		return "", err
 	}
-	return nil
+	return w.String(), nil
 }
 
-func SliceOfType(typ ast.Expr) ast.Expr {
-	return &ast.ArrayType{Elt: typ}
+
+type VerbDefinition interface {
+	Tag() string
+	Description() string
+	NewVerbPhrase(*context, *InterfaceDefinition, *ast.Field, *ast.Comment) (VerbPhrase, error)
+	MethodTemplate() *template.Template
+	StructBody(VerbPhrase) (string, error)
 }
+
+var VerbDefinitions map[string]VerbDefinition = map[string]VerbDefinition{}
+
+

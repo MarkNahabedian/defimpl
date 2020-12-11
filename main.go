@@ -17,7 +17,7 @@ func main() {
 	if show_verbs {
 		for _, v := range VerbDefinitions {
 			fmt.Fprintf(os.Stderr, "%s\t  %s\n",
-				v.Verb, v.Description)
+				v.Tag(), v.Description())
 		}
 		return
 	}
@@ -31,6 +31,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "defimpl: %s\n", err)
 		return
 	}
+/*
+	if debug_dump {
+		ctx.debug_dump()
+	}
+*/
 	ctx.DoInheritance()
 	for _, f := range ctx.files {
 		fmt.Printf("file %s\n", f.InputFilePath)

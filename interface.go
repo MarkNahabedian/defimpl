@@ -3,24 +3,21 @@ package main
 import "defimpl/util"
 import "fmt"
 import "go/ast"
-import "go/token"
-import "os"
-import "reflect"
 import "strings"
 
 
 type InterfaceDefinition struct {
+	File          *File
 	IsAbstract    bool
 	InterfaceType *ast.InterfaceType
 	InterfaceName string
-	SlotSpecs     []*slotSpec
-	Package       string
+	VerbPhrases   []VerbPhrase
 	Inherited     []*IDKey                // Interfaces that are included by this one
 	AllInherited  []*InterfaceDefinition  // Transitive closure of all inherited interfaces.
 }
 
 func (idef *InterfaceDefinition) QualifiedName() string {
-	return util.ImplName(idef.Package, idef.InterfaceName)
+	return util.ImplName(idef.Package(), idef.InterfaceName)
 }
 
 // StructName returns the default name for the implementing struct for
@@ -32,24 +29,17 @@ func (idef *InterfaceDefinition) StructName() string {
 // DefinesStruct returns true if an implementing sruct should be
 // defined for the interface represented by this InterfaceDefinition.
 func (idef *InterfaceDefinition) DefinesStruct() bool {
-	return !idef.IsAbstract && (len(idef.SlotSpecs) > 0)
+	return !idef.IsAbstract
 }
 
 func (idef *InterfaceDefinition) Fields() []*ast.Field {
 	return util.FieldListSlice(idef.InterfaceType.Methods)
 }
 
-// getSpec finds or creates a slotSpec for the specified slot name.
-func (idef *InterfaceDefinition) GetSpec(name string) *slotSpec {
-	for _, sspec := range id.SlotSpecs {
-		if sspec.Name == name {
-			return sspec
-		}
-	}
-	spec := &slotSpec{Name: name}
-	id.SlotSpecs = append(id.SlotSpecs, spec)
-	return spec
+func (idef *InterfaceDefinition) Package() string {
+	return idef.File.Package
 }
+
 
 const InterfaceIsAbstractMarker string = "(ABSTRACT)"
 
@@ -73,7 +63,7 @@ func isAbstractInterface(x *ast.GenDecl) bool {
 
 // NewInterface returns a new InterfaceDefinition if decl represents
 // an interface definition, otherwise it returns nil.
-func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition {
+func NewInterface(ctx *context, file *File, decl ast.Decl) *InterfaceDefinition {
 	gd, ok := decl.(*ast.GenDecl)
 	if !ok {
 		return nil
@@ -92,109 +82,20 @@ func NewInterface(ctx *context, pkg string, decl ast.Decl) *InterfaceDefinition 
 			ctx.fset.Position(gd.TokPos).String()))
 	}
 	id := &InterfaceDefinition{
+		File: file,
 		// It appears that the parser associates the comment group with
 		// the outer GenDecl rather than with the TypeSpec.
 		IsAbstract:    isAbstractInterface(gd),
 		InterfaceType: it,
 		InterfaceName: spec.Name.Name,
-		SlotSpecs:     []*slotSpec{},
-		Package:       pkg,
 		Inherited:     []*IDKey{},
 	}
 	for _, m := range id.Fields() {
-		// We need to do something more clever for inheritance
-		// support.  Maybe we should dispatch on verb
-		// definition here?
-		if len(m.Names) == 0 {
-			id.Inherited = append(id.Inherited, ExprToIDKey(m.Type, id.Package))
-		}
-		if len(m.Names) != 1 {
-			continue
-		}
-		verb, slot := methodDefimpl(ctx, m)
-		if verb == nil {
-			continue
-		}
-		spec := id.GetSpec(slot)
-		spec.assimilate(ctx, id, m, verb)
+		GetVerbPhrase(ctx, id, m)
 	}
 	return id
 }
 
-// methodDefimpl returns the verb and slot name from a method's
-// defimpl comment if any.
-func methodDefimpl(ctx *context, method *ast.Field) (verb *VerbDefinition, slot_name string) {
-	if method.Comment == nil {
-		return nil, ""
-	}
-	for _, c := range method.Comment.List {
-		val, ok := reflect.StructTag(c.Text[2:]).Lookup("defimpl")
-		if !ok {
-			continue
-		}
-		pos := ctx.fset.Position(c.Slash)
-		split := strings.Split(val, " ")
-		if len(split) < 1 {
-			fmt.Fprintf(os.Stderr, "defimpl: No verb in defimpl comment %s: %q\n", pos, c.Text)
-			continue
-		}
-		verb := split[0]
-		vd := LookupVerb(verb)
-		if vd == nil {
-			fmt.Fprintf(os.Stderr, "defimpl: Unknown verb %q in defimpl comment %s: %q\n", verb, pos, c.Text)
-			continue			
-		}
-		if len(split) != vd.ParamCount + 1 {
-			fmt.Fprintf(os.Stderr, "defimpl verb %q expects %d parameters: %s %q",
-				verb, vd.ParamCount, pos, c.Text)
-			continue
-		}
-		slot := ""
-		if len(split) > 1 {
-			slot = split[1]
-		}
-		if verbose {
-			fmt.Printf("%s: %q %q %v\n", pos, verb, slot, vd != nil)
-		}
-		if vd != nil {
-			return vd, slot
-		}
-	}
-	return nil, ""
-}
-
-type slotSpec struct {
-	Name  string
-	Type  ast.Expr // types.Type
-	Verbs []*VerbTemplateParameter
-}
-
-// CheckType fills in the Type of spec and makes sure that the Type is
-// consistent for all method verbs associated with that slot.
-func (spec *slotSpec) CheckType(typ ast.Expr) error {
-	teq := func(t1, t2 ast.Expr) bool {
-		return reflect.TypeOf(t1) == reflect.TypeOf(t2)
-	}
-	if spec.Type == nil {
-		spec.Type = typ
-	} else {
-		if !teq(spec.Type, typ) {
-			return fmt.Errorf("Incompatible types: %#v, %#v",
-				typ, spec.Type)
-		}
-	}
-	return nil
-}
-
-func (spec *slotSpec) assimilate(ctx *context, id *InterfaceDefinition, m *ast.Field, verb *VerbDefinition) {
-	errorPosition := func() token.Position {
-		return ctx.fset.Position(m.Comment.Pos())
-	}
-	if err := verb.Assimilate(ctx, verb, spec, id, m); err != nil {
-		fmt.Fprintf(os.Stderr, "defimpl: %s at %s\n", err, errorPosition().String())
-		return
-	}
-}
 
 // TypePackage returns the package name if the Expr (which should
 // identify a type) specifies one.

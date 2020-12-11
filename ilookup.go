@@ -71,7 +71,7 @@ func (i *InterfaceDefinition) IDLookup(key *IDKey) *InterfaceDefinition {
 	if i.InterfaceName != key.Name {
 		return nil
 	}
-	if i.Package != key.Package {
+	if i.Package() != key.Package {
 		return nil
 	}
 	return i

@@ -1,62 +1,79 @@
 package main
 
-import "fmt"
 import "go/ast"
 import "go/types"
 import "text/template"
-import "defimpl/util"
+
+
+type IterateVerbPhrase struct {
+	slotVerbPhrase
+}
+
+var _ VerbPhrase = (*IterateVerbPhrase)(nil)
+var _ SlotVerbPhrase = (*IterateVerbPhrase)(nil)
+var _ MethodTemplateParameter = (*IterateVerbPhrase)(nil)
+
+
+type Verb_Iterate struct {
+	slotVerbDefinition
+}
+
+var _ VerbDefinition = (*Verb_Iterate)(nil)
 
 func init() {
-	vd := &VerbDefinition{
-		Verb:         "iterate",
-		ParamCount:   1,
-	}
-	vd.Description = "Applies the specified function to each element of the slice-valued slot until the function returns false."
-	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
-		ftype, ok := m.Type.(*ast.FuncType)
-		if !ok {
-			return nil
-		}
-		if err := checkSignature(ftype, 1, 0); err != nil {
-			return err
-		}
-		params := util.FieldListSlice(ftype.Params)
-
-		// params[0] should be of type func(spec.Type) bool
-		funarg, ok := params[0].Type.(*ast.FuncType)
-		if !ok {
-			return fmt.Errorf("Wrong type for iterate parameter")
-		}
-		if err := checkSignature(funarg, 1, 1); err != nil {
-			return err
-		}
-		/*
-			if ctx.info.TypeOf(funarg.Results.List[0].Type).String() != "bool" {
-				return fmt.Errorf("Wrong return type for iterate parameter")
-			}
-		*/
-		spec.CheckType(SliceOfType(funarg.Params.List[0].Type))
-		spec.Verbs = append(spec.Verbs, &VerbTemplateParameter{
-			Verb:          vd,
-			InterfaceName: id.InterfaceName,
-			StructName:    id.StructName(),
-			MethodName:    m.Names[0].Name,
-			SlotName:      spec.Name,
-			Type:          spec.Type,
-		})
-		return nil
-	}
-	vd.TopLevelTemplate = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
-		"ExprString": types.ExprString,
-	}).Parse(`
-		{{.DocComment}}
-		func (x *{{.StructName}}) {{.MethodName}} (f func(item {{ExprString .Type.Elt}}) bool) {
-			for _, v := range x.{{.SlotName}} {
-				if !f(v) {
-					break
-				}
-			}
-		}
-	`))
-	VerbDefinitions[vd.Verb] = vd
+	vd := &Verb_Iterate{}
+	VerbDefinitions[vd.Tag()] = vd
 }
+
+// Verb is part of the VerbDefinition interface.
+func (vd *Verb_Iterate) Tag() string { return "iterate" }
+
+// Description is part of the VerbDefinition interface.
+func (vd *Verb_Iterate) Description() string {
+	return "applies the specified function to each element of the slice-valued slot until the function returns false."
+}
+
+// NewVerbPhrase is part of the VerbDefinition interface.
+func (vd *Verb_Iterate) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field *ast.Field, comment *ast.Comment) (VerbPhrase, error) {
+	slot, err := parse_slot_verb_phrase(ctx, field, comment)
+	if err != nil {
+		return nil, err
+	}
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	if err != nil {
+		return nil, err
+	}
+	vp := &IterateVerbPhrase{
+		slotVerbPhrase {
+			baseVerbPhrase: baseVerbPhrase {
+				verb: vd,
+				idef: idef,
+				field: field,
+			},
+			slot_name: slot,
+			slot_type: types.NewSlice(slot_type),
+		},
+	}
+	if err := addSlotSpec(idef, vp); err != nil {
+		return nil, err
+	}
+	return vp, nil
+}
+
+var iterate_method_template = template.Must(
+	template.New("iterate_method_template").Parse(`
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+func (x *{{.StructName}}) {{.MethodName}} (f func(item {{.TypeString .SlotType.Elem}}) bool) {
+	for _, v := range x.{{.SlotName}} {
+		if !f(v) {
+			break
+		}
+	}
+}
+`))
+
+// MethodTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Iterate) MethodTemplate() *template.Template {
+	return iterate_method_template
+}
+

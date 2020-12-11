@@ -63,7 +63,9 @@ func (idef *InterfaceDefinition) GetInherited(ctx *context) []*InterfaceDefiniti
 	return gi(idef, []*InterfaceDefinition{})
 }
 
-func (idef *InterfaceDefinition) InheritedVerbs() []*VerbTemplateParameter {
+func (idef *InterfaceDefinition) InheritedVerbs() /* []*VerbTemplateParameter */ {
+	panic("NYI")
+	/*
 	result := []*VerbTemplateParameter{}
 	for _, inherited := range idef.AllInherited {
 		if !inherited.IsAbstract {
@@ -77,5 +79,6 @@ func (idef *InterfaceDefinition) InheritedVerbs() []*VerbTemplateParameter {
 			}
 		}
 	}
-	return result
+	*/
+	// return result
 }
