@@ -15,9 +15,10 @@ type Thing interface {
 	Name() string               // defimpl:"read name"
 	SetName(string)             // defimpl:"set name"
 	Node() ast.Node             // defimpl:"read node"
-	SetTNode(ast.Node)          // defimpl:"set node"
+	SetNode(ast.Node)           // defimpl:"set node"
 	// related
 	AddRelated(...Thing)        // defimpl:"append related"
+	RemoveRelated(Thing)        // defimpl:"delete related"
 	GetRelated(int) Thing       // defimpl:"index related"
 	CountRelated() int          // defimpl:"length related"
 	DoRelated(func(Thing) bool) // defimpl:"iterate related"
@@ -48,9 +49,10 @@ type Sub1 interface {
 	Color() string  // defimpl:"read color"
 }
 
+/*
 type Gazong interface {
 	Base2
 	Sub1
 	Smug() bool     // defimpl:"read smug"
 }
-
+*/
