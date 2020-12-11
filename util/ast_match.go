@@ -12,35 +12,38 @@ import "go/token"
 // name and the corresponding value from candidate are added to
 // scratchpad.
 func AstMatch(pattern interface{}, candidate interface{}, scratchpad map[string]interface{}) (bool, error) {
-	if reflect.TypeOf(pattern) != reflect.TypeOf(candidate) {
-		return false, fmt.Errorf("type mismatch: %T, %T", pattern, candidate)
-	}
 	switch p := pattern.(type) {
 	case token.Pos:
 		// We don't care whether positions match.
 		return true, nil
 	case *ast.Ident:
-		c := candidate.(*ast.Ident)
 		if strings.HasPrefix(p.Name, "_") {
-			val, ok := scratchpad[p.Name]
+			_, ok := scratchpad[p.Name]
 			if ok {
-				if name, ok := val.(string); ok {
-					if name != c.Name {
-						return false, fmt.Errorf("identifier mismatch: %s, %s", name, c.Name)
-					}
-				} else {
-					return false, fmt.Errorf("scratchpad[%s] is %T, not string", p.Name, val)
-				}
+				return false, fmt.Errorf("%s already set", p.Name)
 			} else {
-				scratchpad[p.Name] = c
+				scratchpad[p.Name] = candidate
 			}
 		}
+	case *ast.Field:
+		if reflect.TypeOf(pattern) != reflect.TypeOf(candidate) {
+			return false, fmt.Errorf("type mismatch: %T, %T", pattern, candidate)
+		}
+		return AstMatch(p.Type, candidate.(*ast.Field).Type, scratchpad)
 	default:
+		// Kludge because I don't have the patience to
+		// implement a clause for every type we might
+		// encounter in an ast.
+		if reflect.TypeOf(pattern) != reflect.TypeOf(candidate) {
+			return false, fmt.Errorf("type mismatch: %T, %T", pattern, candidate)
+		}
 		pv := reflect.ValueOf(pattern)
 		cv := reflect.ValueOf(candidate)
 		if pv.Kind() == reflect.Array || pv.Kind() == reflect.Slice {
 			if pvl, cvl :=  pv.Len(), cv.Len(); pvl != cvl {
-				return false, fmt.Errorf("Lengths don't match: %d, %d", pvl, cvl)
+				return false, fmt.Errorf("Lengths don't match: %d, %d; %v, %v",
+					pvl, cvl,
+					pv.Interface(), cv.Interface())
 			} else {
 				for i := 0; i < pvl; i++ {
 					match, err := AstMatch(
@@ -70,7 +73,6 @@ func AstMatch(pattern interface{}, candidate interface{}, scratchpad map[string]
 		for i := 0; i < reflect.Indirect(pv).NumField(); i++ {
 			pf := pvi.Field(i).Interface()
 			cf := cvi.Field(i).Interface()
-			// fmt.Printf("Considering %v %v\n", pf, cf)
 			if match, err := AstMatch(pf, cf, scratchpad); !match {
 				return false, err
 			}
