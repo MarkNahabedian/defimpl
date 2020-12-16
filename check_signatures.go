@@ -60,7 +60,8 @@ func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Fie
 		}
 	}
 	if fd == nil {
-		return nil, fmt.Errorf("verb MethodTemplate for %q should have exactly one FuncDecl")
+		return nil, fmt.Errorf("verb MethodTemplate for %q should have exactly one FuncDecl",
+			vd.Tag())
 	}
 	scratchpad :=  map[string]interface{}{}
 	// Match the method definition with the Field of the

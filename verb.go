@@ -69,7 +69,7 @@ func GetVerbPhrase(ctx *context, idef *InterfaceDefinition, method *ast.Field) {
 		vd, ok := VerbDefinitions[split[0]]
 		if !ok {
 			fmt.Fprintf(os.Stderr, "defimpl: Unknown verb %q in defimpl comment %s: %q\n",
-				split[0], c.Slash, c.Text)
+				split[0], ctx.fset.Position(c.Slash), c.Text)
 			continue
 		}
 		// vp, err := constructor(ctx, idef, method, c)
@@ -87,8 +87,12 @@ func GetVerbPhrase(ctx *context, idef *InterfaceDefinition, method *ast.Field) {
 // MethodDefinition returns the definition of the method for this verb
 // based on the Verb.MethodTemplate.
 func MethodDefinition(vp VerbPhrase) (string, error) {
+	tmpl := vp.Verb().MethodTemplate()
+	if tmpl == nil {
+		return "", nil
+	}
 	w := &bytes.Buffer{}
-	if err := vp.Verb().MethodTemplate().Execute(w, vp); err != nil {
+	if err := tmpl.Execute(w, vp); err != nil {
 		return "", err
 	}
 	return w.String(), nil

@@ -29,7 +29,7 @@ func (idef *InterfaceDefinition) debug_dump() {
 		abstract = "abstract "
 	}
 	fmt.Fprintf(os.Stderr, "  interface %s.%s%s:\n",
-		idef.Package, idef.InterfaceName, abstract)
+		idef.Package(), idef.InterfaceName, abstract)
 	for _, vp := range idef.VerbPhrases {
 		debug_dump_vp(vp)
 	}
