@@ -33,26 +33,29 @@ type Thing interface {
 	Template() *tmpl.Template // defimpl:"read template"
 }
 
-// Base1 (ABSTRACT)
+type SpecialThing interface {
+	Thing                      // defimpl:"embed"
+	Specialty() interface{}   // defimpl:"read specialty"
+}
+
+
+/*
 type Base1 interface {
 	Id() int  // defimpl:"read id"
 }
 
-// Base2 (ABSTRACT)
 type Base2 interface {
-	Name() string  // defimpl:"read name"
+	Name() string    // defimpl:"read name"
 }
-
-// Sub1 (ABSTRACT)
+  
 type Sub1 interface {
-	Base1
-	Color() string  // defimpl:"read color"
+	Base1             // defimpl:"embed"
+	Color() string   // defimpl:"read color"
 }
 
-/*
 type Gazong interface {
-	Base2
-	Sub1
+	Base2            // defimpl:"read color"
+	Sub1             // defimpl:"read color"
 	Smug() bool     // defimpl:"read smug"
 }
 */
