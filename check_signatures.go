@@ -32,10 +32,15 @@ type fakeInterfaceDefinition struct {
 // CheckSignatures then executes the template and parses the result to
 // serve as the pattern argument of AstMatch.
 func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Field, tmpl *template.Template) (types.Type, error) {
+	if len(field.Names) != 1 {
+		return nil, nil
+	}
+	// This needs to match the definition of (*baseVerbPhrase).MethodName:
+	field_name := field.Names[0].Name
 	w := &bytes.Buffer{}
 	fmt.Fprintf(w, "package %s\n\n", pkg)
 	if err := tmpl.Execute(w, &CheckSignaturesVerbPhraseSurrogate{
-		MethodName: MatchVar("IGNORE"),
+		MethodName: MatchVar(field_name),
 		InterfaceName: MatchVar("IGNORE"),
 		StructName: MatchVar("IGNORE"),
 		SlotName: MatchVar("IGNORE"),
@@ -52,9 +57,17 @@ func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Fie
 		return nil, err
 	}
 	var fd *ast.FuncDecl
-	// Find the method definition from the parsed template result:
+	// Find the method definition from the parsed template result
+	// that has the same name as field:
 	for _, decl := range parsed.Decls {
-		if fd1, ok := decl.(*ast.FuncDecl); ok {
+		fd1, ok := decl.(*ast.FuncDecl)
+		if !ok {
+			continue
+		}
+		if fd1.Name == nil {
+			continue
+		}
+		if fd1.Name.Name == field_name {
 			fd = fd1
 			break
 		}
