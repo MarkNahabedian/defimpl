@@ -18,7 +18,7 @@ type EmbedVerbPhrase struct {
 }
 
 var _ VerbPhrase = (*EmbedVerbPhrase)(nil)
-// var _ MethodTemplateParameter = (*EmbedVerbPhrase)(nil)
+// var _ GlobalsTemplateParameter = (*EmbedVerbPhrase)(nil)
 
 func (vp *EmbedVerbPhrase)StructBody() (string, error) {
 	return "", nil
@@ -91,15 +91,10 @@ func (vd *Verb_Embed) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 // *** TODO: add a global type assertion, e.g.
 //   var _ Thing = (*SpecialThingImpl)(nil)
 // that the Impl type implements the embedded interfaces.
-//
-// To do this we need to generalize MethodTemplate to provide
-// arbitrary global definitions, which means that CheckSignatures
-// needs to do better filtering to find the method definition to
-// compare against.
 
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Embed) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Embed) GlobalsTemplate() *template.Template {
 	return (*template.Template)(nil)
 }
 

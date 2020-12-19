@@ -10,7 +10,7 @@ type LengthVerbPhrase struct {
 
 var _ VerbPhrase = (*LengthVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*LengthVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*LengthVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*LengthVerbPhrase)(nil)
 
 
 type Verb_Length struct {
@@ -66,8 +66,8 @@ func (x *{{.StructName}}) {{.MethodName}}() int {
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Length) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Length) GlobalsTemplate() *template.Template {
 	return length_method_template
 }
 

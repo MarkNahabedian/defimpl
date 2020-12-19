@@ -11,7 +11,7 @@ type AppendVerbPhrase struct {
 
 var _ VerbPhrase = (*AppendVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*AppendVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*AppendVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*AppendVerbPhrase)(nil)
 
 
 type Verb_Append struct {
@@ -39,7 +39,7 @@ func (vd *Verb_Append) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fi
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (x *{{.StructName}}) {{.MethodName}} (v ...{{.TypeString .SlotType.Elem}}) 
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Append) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Append) GlobalsTemplate() *template.Template {
 	return append_method_template
 }
 

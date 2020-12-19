@@ -11,7 +11,7 @@ type IterateVerbPhrase struct {
 
 var _ VerbPhrase = (*IterateVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*IterateVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*IterateVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*IterateVerbPhrase)(nil)
 
 
 type Verb_Iterate struct {
@@ -39,7 +39,7 @@ func (vd *Verb_Iterate) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, f
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func (x *{{.StructName}}) {{.MethodName}} (f func(item {{.TypeString .SlotType.E
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Iterate) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Iterate) GlobalsTemplate() *template.Template {
 	return iterate_method_template
 }
 

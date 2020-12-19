@@ -10,7 +10,7 @@ type ReadVerbPhrase struct {
 
 var _ VerbPhrase = (*ReadVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*ReadVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*ReadVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*ReadVerbPhrase)(nil)
 
 
 type Verb_Read struct {
@@ -38,7 +38,7 @@ func (vd *Verb_Read) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fiel
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func (x *{{.StructName}}) {{.MethodName}}() {{.TypeString .SlotType}} {
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Read) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Read) GlobalsTemplate() *template.Template {
 	return read_method_template
 }
 

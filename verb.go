@@ -9,9 +9,9 @@ import "go/ast"
 import "text/template"
 
 
-// MethodTemplateParameter codifies the parameter of the
-// (VerbDefinition).MethodTemplate.
-type MethodTemplateParameter interface {
+// GlobalsTemplateParameter codifies the parameter of the
+// (VerbDefinition).GlobalsTemplate.
+type GlobalsTemplateParameter interface {
 	MethodName() string
 	InterfaceName() string
 	StructName() string
@@ -42,8 +42,8 @@ type VerbPhrase interface {
 	// GlobalDefinitions() (string, error)
 
 	// The following methods are a convenience for implementing
-	// MethodTemplate templates.  Such templates are executed with
-	// either a VerbPhrase or a MethodTemplateParameter (see
+	// GlobalsTemplate templates.  Such templates are executed with
+	// either a VerbPhrase or a GlobalsTemplateParameter (see
 	// CheckSignatures).
 
 	// InterfaceName returns the InterfaceName from the InterfaceDefinition.
@@ -84,10 +84,10 @@ func GetVerbPhrase(ctx *context, idef *InterfaceDefinition, method *ast.Field) {
 	}
 }
 
-// MethodDefinition returns the definition of the method for this verb
-// based on the Verb.MethodTemplate.
-func MethodDefinition(vp VerbPhrase) (string, error) {
-	tmpl := vp.Verb().MethodTemplate()
+// GlobalDefinitions returns the definition of the method for this verb
+// based on the Verb.GlobalsTemplate.
+func GlobalDefinitions(vp VerbPhrase) (string, error) {
+	tmpl := vp.Verb().GlobalsTemplate()
 	if tmpl == nil {
 		return "", nil
 	}
@@ -103,7 +103,7 @@ type VerbDefinition interface {
 	Tag() string
 	Description() string
 	NewVerbPhrase(*context, *InterfaceDefinition, *ast.Field, *ast.Comment) (VerbPhrase, error)
-	MethodTemplate() *template.Template
+	GlobalsTemplate() *template.Template
 	StructBody(VerbPhrase) (string, error)
 }
 

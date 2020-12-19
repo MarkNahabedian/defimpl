@@ -10,7 +10,7 @@ type SetVerbPhrase struct {
 
 var _ VerbPhrase = (*SetVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*SetVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*SetVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*SetVerbPhrase)(nil)
 
 
 type Verb_Set struct {
@@ -38,7 +38,7 @@ func (vd *Verb_Set) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func (x *{{.StructName}}) {{.MethodName}}(v {{.TypeString .SlotType}}) {
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Set) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Set) GlobalsTemplate() *template.Template {
 	return set_method_template
 }
 

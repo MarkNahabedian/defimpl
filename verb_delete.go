@@ -11,7 +11,7 @@ type DeleteVerbPhrase struct {
 
 var _ VerbPhrase = (*DeleteVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*DeleteVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*DeleteVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*DeleteVerbPhrase)(nil)
 
 
 type Verb_Delete struct {
@@ -39,7 +39,7 @@ func (vd *Verb_Delete) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fi
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func (x *{{.StructName}}) {{.MethodName}} (item {{.TypeString .SlotType.Elem}}) 
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Delete) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Delete) GlobalsTemplate() *template.Template {
 	return delete_method_template
 }
 

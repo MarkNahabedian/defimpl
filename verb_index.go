@@ -11,7 +11,7 @@ type IndexVerbPhrase struct {
 
 var _ VerbPhrase = (*IndexVerbPhrase)(nil)
 var _ SlotVerbPhrase = (*IndexVerbPhrase)(nil)
-var _ MethodTemplateParameter = (*IndexVerbPhrase)(nil)
+var _ GlobalsTemplateParameter = (*IndexVerbPhrase)(nil)
 
 
 type Verb_Index struct {
@@ -39,7 +39,7 @@ func (vd *Verb_Index) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 		if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (x *{{.StructName}}) {{.MethodName}} (index int) {{.TypeString .SlotType.El
 }
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Index) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Index) GlobalsTemplate() *template.Template {
 	return index_method_template
 }
 

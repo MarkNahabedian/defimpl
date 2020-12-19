@@ -9,7 +9,7 @@ type DiscriminateVerbPhrase struct {
 }
 
 var _ VerbPhrase = (*DiscriminateVerbPhrase)(nil)
-// var _ MethodTemplateParameter = (*DiscriminateVerbPhrase)(nil)
+// var _ GlobalsTemplateParameter = (*DiscriminateVerbPhrase)(nil)
 
 func (vp *DiscriminateVerbPhrase)StructBody() (string, error) {
 	return "", nil
@@ -35,7 +35,7 @@ func (vd *Verb_Discriminate) Description() string {
 
 // NewVerbPhrase is part of the VerbDefinition interface.
 func (vd *Verb_Discriminate) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field *ast.Field, comment *ast.Comment) (VerbPhrase, error) {
-	_, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.MethodTemplate())
+	_, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +55,8 @@ var discriminate_method_template = template.Must(
 func (x *{{.StructName}}) {{.MethodName}}() {}
 `))
 
-// MethodTemplate is part of the VerbDefinition interface.
-func (vd *Verb_Discriminate) MethodTemplate() *template.Template {
+// GlobalsTemplate is part of the VerbDefinition interface.
+func (vd *Verb_Discriminate) GlobalsTemplate() *template.Template {
 	return discriminate_method_template
 }
 
