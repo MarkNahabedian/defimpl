@@ -29,7 +29,7 @@ func (idef *InterfaceDefinition) StructName() string {
 // DefinesStruct returns true if an implementing sruct should be
 // defined for the interface represented by this InterfaceDefinition.
 func (idef *InterfaceDefinition) DefinesStruct() bool {
-	return !idef.IsAbstract
+	return  len(idef.VerbPhrases) > 0 && !idef.IsAbstract
 }
 
 func (idef *InterfaceDefinition) Fields() []*ast.Field {
