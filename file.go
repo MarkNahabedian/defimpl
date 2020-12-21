@@ -179,7 +179,7 @@ import "defimpl/runtime"
 				var impl *{{.StructName}}
 				runtime.Register(reflect.TypeOf( inter), reflect.TypeOf(impl))
 			}
-			{{- range .VerbPhrases -}}
+			{{range .VerbPhrases -}}
 				{{GlobalDefinitions .}}
 			{{- end -}}
 		{{- end -}}
