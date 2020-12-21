@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "regexp"
 import "go/ast"
 import "go/importer"
 import "go/parser"
@@ -18,6 +19,7 @@ type context struct {
 	info  *types.Info
 	astFiles []*ast.File
 	files []*File
+	typeErrors []error
 }
 
 // NewContext returns a context for orchestrating defimpl's operations.
@@ -53,6 +55,7 @@ func NewContext(dir string) (*context, error) {
 		// processed and VerbPhrases created.
 		ctx.files = append(ctx.files, NewFile(ctx, astFile))
 	}
+	ctx.ReportTypeErrors()
 	return ctx, nil
 }
 
@@ -61,8 +64,46 @@ func (ctx *context) Check() {
 	conf := types.Config{
 		Importer: importer.For("source", nil), // importer.Default(),
 		Error: func(err error) {
-			fmt.Fprintf(os.Stderr, "defimpl error while type checking: %s\n", err)
+			ctx.typeErrors = append(ctx.typeErrors, err)
 		},
 	}
 	_, _ = conf.Check(ctx.astFiles[0].Name.Name, ctx.fset, ctx.astFiles, ctx.info)
+}
+
+func (ctx *context) ReportTypeErrors() {
+	ignore := false
+	for _, err := range ctx.typeErrors {
+		missing := typeErrorUndeclaredName(err)
+		if missing != "" {
+			for _, f := range ctx.files {
+				for _, idef := range f.Interfaces {
+					if idef.StructName() == missing {
+						ignore = true
+						break 
+					}
+				}
+				if ignore {
+					break
+				}
+			}
+		}
+		if !ignore {
+			fmt.Fprintf(os.Stderr, "defimpl error while type checking: %s\n", err)
+		}
+	}
+}
+
+var typeErrorUndeclaredNameRegexp = regexp.MustCompile(
+	`^undeclared name: (?P<type>[a-zA-Z_0-9]+)$`)
+
+func typeErrorUndeclaredName(err error) string {
+	e, ok := err.(types.Error)
+	if !ok {
+		return ""
+	}
+	m := typeErrorUndeclaredNameRegexp.FindStringSubmatch(e.Msg)
+	if len(m) > 1 {
+		return m[1]
+	}
+	return ""
 }
