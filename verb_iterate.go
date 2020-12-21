@@ -62,7 +62,7 @@ func (vd *Verb_Iterate) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, f
 
 var iterate_method_template = template.Must(
 	template.New("iterate_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}} (f func(item {{.TypeString .SlotType.Elem}}) bool) {
 	for _, v := range x.{{.SlotName}} {
 		if !f(v) {

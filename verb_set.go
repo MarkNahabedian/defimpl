@@ -59,7 +59,7 @@ func (vd *Verb_Set) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field
 
 var set_method_template = template.Must(
 	template.New("set_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}}(v {{.TypeString .SlotType}}) {
 	x.{{.SlotName}} = v
 }

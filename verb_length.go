@@ -60,7 +60,7 @@ func (vd *Verb_Length) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fi
 
 var length_method_template = template.Must(
 	template.New("length_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}}() int {
 	return len(x.{{.SlotName}})
 }

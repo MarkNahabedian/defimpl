@@ -62,7 +62,7 @@ func (vd *Verb_Delete) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fi
 
 var delete_method_template = template.Must(
 	template.New("delete_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}} (item {{.TypeString .SlotType.Elem}}) {
 	i := -1
 	for j, v := range x.{{.SlotName}} {

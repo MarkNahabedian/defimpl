@@ -59,7 +59,7 @@ func (vd *Verb_Read) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fiel
 
 var read_method_template = template.Must(
 	template.New("read_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}}() {{.TypeString .SlotType}} {
 	return x.{{.SlotName}}
 }

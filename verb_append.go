@@ -62,7 +62,7 @@ func (vd *Verb_Append) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fi
 
 var append_method_template =  template.Must(
 	template.New("append_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}} (v ...{{.TypeString .SlotType.Elem}}) {
 	x.{{.SlotName}} = append(x.{{.SlotName}}, v...)
 }

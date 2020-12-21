@@ -51,7 +51,7 @@ func (vd *Verb_Discriminate) NewVerbPhrase(ctx *context, idef *InterfaceDefiniti
 
 var discriminate_method_template = template.Must(
 		template.New("discriminate_method_template").Parse(`
-// {{.MethodName}} is part of the {{.InterfaceName}} interface.
+// {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
 func (x *{{.StructName}}) {{.MethodName}}() {}
 `))
 

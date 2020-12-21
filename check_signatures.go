@@ -112,8 +112,15 @@ type MatchVar string
 func (v MatchVar) Elem() MatchVar {
 	return v
 }
+
+func (v MatchVar) Tag()  MatchVar {
+	return v
+}
         
 func (_ CheckSignaturesVerbPhraseSurrogate) TypeString(v MatchVar) MatchVar {
 	return v
 }
 
+func (_ CheckSignaturesVerbPhraseSurrogate) Verb()  MatchVar {
+	return MatchVar("SURROGATE")
+}

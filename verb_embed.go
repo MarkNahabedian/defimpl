@@ -103,7 +103,7 @@ func (vd *Verb_Embed) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 
 var embed_method_template = template.Must(
 	template.New("embed_method_template").Parse(`
-var _ {{.EmbeddedInterface}} = (*{{.StructName}})(nil)  // defimpl verb embed
+var _ {{.EmbeddedInterface}} = (*{{.StructName}})(nil)  // defimpl verb {{.Verb.Tag}}.
 `))
 
 // GlobalsTemplate is part of the VerbDefinition interface.
