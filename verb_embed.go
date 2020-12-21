@@ -4,7 +4,6 @@ import "bytes"
 import "fmt"
 import "reflect"
 import "strings"
-// import "defimpl/util"
 import "go/ast"
 import "go/parser"
 import "go/types"
@@ -15,6 +14,7 @@ import "defimpl/util"
 type EmbedVerbPhrase struct {
 	baseVerbPhrase
 	ImplStruct string
+	EmbeddedInterface string
 }
 
 var _ VerbPhrase = (*EmbedVerbPhrase)(nil)
@@ -44,7 +44,8 @@ func (vd *Verb_Embed) Description() string {
 
 // NewVerbPhrase is part of the VerbDefinition interface.
 func (vd *Verb_Embed) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field *ast.Field, comment *ast.Comment) (VerbPhrase, error) {
-	// We expect the method signature to have an interface type but no name.
+	// We expect the method signature to have an interface type
+	// but no name.
 	//
 	// The verb comment might have an optional parameter that is
 	// the type to embed.  It might come from a package that is
@@ -64,17 +65,23 @@ func (vd *Verb_Embed) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 		}
 		impl = v.ImplName()
 	}
-	// If no struct specified then assume that the embedded
-	// interface has a defimpl generated struct:
-	if impl == "" {
-		switch e := field.Type.(type) {
+	embedded_package := ""
+	embedded_name := ""
+	switch e := field.Type.(type) {
 		case *ast.Ident:
-			impl = util.ImplName("", e.Name)
+			embedded_package = ""
+			embedded_name = e.Name
 		case *ast.SelectorExpr:
-			impl = util.ImplName(types.ExprString(e.X), e.Sel.Name)
+			embedded_package = types.ExprString(e.X)
+			embedded_name = e.Sel.Name
+
 		default:
 			panic(fmt.Sprintf("Unsupported EXpr type %T", field.Type))
 		}
+	// If no struct specified then assume that the embedded
+	// interface has a defimpl generated struct:
+	if impl == "" {
+		impl = util.ImplName(embedded_package, embedded_name)
 	}
 	vp := &EmbedVerbPhrase{
 		baseVerbPhrase: baseVerbPhrase {
@@ -83,19 +90,25 @@ func (vd *Verb_Embed) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 			field: field,
 		},
 		ImplStruct: impl,
+		EmbeddedInterface: "",
+	}
+	if embedded_package == "" {
+		vp.EmbeddedInterface = embedded_name
+	} else {
+		vp.EmbeddedInterface = embedded_package + "." + embedded_name
 	}
 	return vp, nil
 }
 
 
-// *** TODO: add a global type assertion, e.g.
-//   var _ Thing = (*SpecialThingImpl)(nil)
-// that the Impl type implements the embedded interfaces.
-
+var embed_method_template = template.Must(
+	template.New("embed_method_template").Parse(`
+var _ {{.EmbeddedInterface}} = (*{{.StructName}})(nil)  // defimpl verb embed
+`))
 
 // GlobalsTemplate is part of the VerbDefinition interface.
 func (vd *Verb_Embed) GlobalsTemplate() *template.Template {
-	return (*template.Template)(nil)
+	return embed_method_template
 }
 
 func (vd *Verb_Embed) StructBody(vp VerbPhrase) (string, error) {
@@ -158,49 +171,3 @@ func ParseEmbedImpl(s string) *parse_embed_visitor {
 	return visitor
 }
 
-
-
-/*
-func init() {
-	vd := &VerbDefinition{
-		Verb:         "embed",
-		ParamCount:   1,
-	}
-	vd.Description = "Specifies a concrete type to embed to implement an interface."
-	vd.Assimilate = func(ctx *context, vd *VerbDefinition, spec *slotSpec, id *InterfaceDefinition, m *ast.Field) error {
-		fmt.Printf("embed field %#v\n", m)
-		/*
-		ftype, ok := m.Type.(*ast.FuncType)
-		if !ok {
-			return nil
-		}
-
-		if err := checkSignature(ftype, 1, 0); err != nil {
-			return err
-		}
-		params := util.FieldListSlice(ftype.Params)
-		spec.CheckType(params[0].Type)
-		spec.Verbs = append(spec.Verbs, &VerbTemplateParameter{
-			Verb:          vd,
-			InterfaceName: id.InterfaceName,
-			StructName:    id.StructName(),
-			MethodName:    m.Names[0].Name,
-			SlotName:      spec.Name,
-			Type:          spec.Type,
-		})
-		return nil
-		*//*
-	}
-	vd.Template = template.Must(template.New(vd.Verb).Funcs(map[string]interface{}{
-		"ExprString": types.ExprString,
-	}).Parse(`
-		{{.DocComment}}
-		// defimpl:embed NOT YET IMPLEMENTED 
-	`))
-	VerbDefinitions[vd.Verb] = vd
-}
-*/
-
-
-
-	
