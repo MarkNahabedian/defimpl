@@ -27,6 +27,41 @@ func ImplToInterface(impl reflect.Type) reflect.Type {
 	return implToInterface[impl]
 }
 
+// InterfaceFor returns the iinterface type for the specified type,
+// assuming that they are under the perview of defimpl.
+func InterfaceFor(t reflect.Type) reflect.Type {
+	switch t.Kind() {
+	case reflect.Interface:
+		return t
+	case reflect.Ptr:
+		if t.Elem().Kind() == reflect.Struct {
+			return ImplToInterface(t)
+		}
+		return nil
+	case reflect.Struct:
+		return ImplToInterface(reflect.PtrTo(t))
+	}
+	return nil
+}
+
+// ImplFor returns the iinterface type for the specified type,
+// assuming that they are under the perview of defimpl.
+func ImplFor(t reflect.Type) reflect.Type {
+	switch t.Kind() {
+	case reflect.Ptr:
+		if t.Elem().Kind() == reflect.Struct {
+			return t
+		}
+		return nil
+	case reflect.Struct:
+		return reflect.PtrTo(t)
+	case reflect.Interface:
+		return InterfaceToImpl(t)
+	}
+	return nil
+}
+
+
 // Register associates the specified interface and implementation
 // types so that they can be found at run time.
 //

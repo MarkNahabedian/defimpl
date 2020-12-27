@@ -1,6 +1,8 @@
 package test
 
+import "reflect"
 import "testing"
+import "defimpl/runtime"
 
 func NewThing() Thing {
 	return Thing(&ThingImpl{})
@@ -49,3 +51,27 @@ func TestSliceValued(t *testing.T) {
 
 func TestInheritance(t *testing.T) {
 }
+
+func TestRuntime(t *testing.T) {
+	thing := &ThingImpl{}
+	thing.SetName("foo")
+	ty := reflect.TypeOf(thing)
+	if ty.Kind() != reflect.Ptr || ty.Elem().Kind() != reflect.Struct {
+		t.Errorf("ThingImpl is %v, not pointer to struct", ty)
+	}
+	if want, got := ty, runtime.ImplFor(ty); got != want {
+		t.Errorf("ImplFor of Impl type failed: want %v, got %v", want, got)
+	}
+	i := runtime.InterfaceFor(ty)
+	if want, got := reflect.Interface, i.Kind(); want != got {
+		t.Errorf("InterfaceFor of Impl type failed: want %v, got %v", want, got)
+	}
+	iimpl := runtime.ImplFor(i)
+	if want, got := reflect.Ptr, iimpl.Kind(); want != got {
+		t.Errorf("ImplFor of interface type failed: want %v, got %v", want, got)
+	}
+	if want, got := reflect.Struct, iimpl.Elem().Kind(); want != got {
+		t.Errorf("ImplFor of interface type failed: want %v, got %v", want, got)
+	}
+}
+
