@@ -174,10 +174,11 @@ import "defimpl/runtime"
 
 			var _ {{.InterfaceName}} = (*{{.StructName}})(nil)
 
-			func init() {
+			var _ = func() error {
 				t := reflect.TypeOf(func({{.InterfaceName}}, *{{.StructName}}){})
 				runtime.Register(t.In(0), t.In(1))
-			}
+				return nil
+			}()
 			{{range .VerbPhrases -}}
 				{{GlobalDefinitions .}}
 			{{- end -}}
