@@ -29,36 +29,38 @@ func ImplToInterface(impl reflect.Type) reflect.Type {
 
 // InterfaceFor returns the iinterface type for the specified type,
 // assuming that they are under the perview of defimpl.
-func InterfaceFor(t reflect.Type) reflect.Type {
+func InterfaceFor(t reflect.Type) (reflect.Type, error) {
 	switch t.Kind() {
 	case reflect.Interface:
-		return t
+		return t, nil
 	case reflect.Ptr:
 		if t.Elem().Kind() == reflect.Struct {
-			return ImplToInterface(t)
+			if i, ok := implToInterface[t]; ok {
+				return i, nil
+			} else {
+				return nil, fmt.Errorf("%s not found in implToInterface", t)
+			}
 		}
-		return nil
+		return nil, fmt.Errorf("%s is pointer, but not to struct", t)
 	case reflect.Struct:
-		return ImplToInterface(reflect.PtrTo(t))
+		return ImplToInterface(reflect.PtrTo(t)), nil
 	}
-	return nil
+	return nil, fmt.Errorf("%s is neither interface nor pointer to struct", t)
 }
 
 // ImplFor returns the iinterface type for the specified type,
 // assuming that they are under the perview of defimpl.
-func ImplFor(t reflect.Type) reflect.Type {
+func ImplFor(t reflect.Type) (reflect.Type, error) {
 	switch t.Kind() {
 	case reflect.Ptr:
 		if t.Elem().Kind() == reflect.Struct {
-			return t
+			return t, nil
 		}
-		return nil
-	case reflect.Struct:
-		return reflect.PtrTo(t)
+		return nil, fmt.Errorf("%s is a pointer, but not to struct", t)
 	case reflect.Interface:
-		return InterfaceToImpl(t)
+		return InterfaceToImpl(t), nil
 	}
-	return nil
+	return nil, fmt.Errorf("ImplFor called on  %s but expected interface or pointer to struct type", t)
 }
 
 
