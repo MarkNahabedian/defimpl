@@ -11,7 +11,7 @@ type DiscriminateVerbPhrase struct {
 var _ VerbPhrase = (*DiscriminateVerbPhrase)(nil)
 // var _ GlobalsTemplateParameter = (*DiscriminateVerbPhrase)(nil)
 
-func (vp *DiscriminateVerbPhrase)StructBody() (string, error) {
+func (vp *DiscriminateVerbPhrase) StructBody() (string, error) {
 	return "", nil
 }
 
@@ -25,7 +25,7 @@ func init() {
 	VerbDefinitions[vd.Tag()] = vd
 }
 
-// Verb is part of the VerbDefinition interface.
+// Tag is part of the VerbDefinition interface.
 func (vd *Verb_Discriminate) Tag() string { return "discriminate" }
 
 // Description is part of the VerbDefinition interface.
