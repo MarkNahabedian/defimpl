@@ -5,7 +5,6 @@ import "fmt"
 import "go/ast"
 import "go/format"
 import "go/parser"
-import "go/token"
 import "go/types"
 import "os"
 import "path"
@@ -14,7 +13,6 @@ import "strconv"
 import "strings"
 import "text/template"
 import "defimpl/util"
-import "golang.org/x/tools/go/ast/astutil"
 
 
 // File represents a single file to be processed.
@@ -24,8 +22,6 @@ type File struct {
 	Package       string
 	Interfaces    []*InterfaceDefinition
 	Output        *ast.File
-	// PendingImports are the imports to be added to Output once we have it:
-	PendingImports   [] *ToImport
 }
 
 func (f *File) Defimpl() string {
@@ -35,16 +31,6 @@ func (f *File) Defimpl() string {
 type ToImport struct {
 	Name string
 	Path string
-}
-
-func (f *File) AddPendingImports(fset *token.FileSet) {
-	for _, pi := range f.PendingImports {
-		if pi.Name == "" {
-			astutil.AddImport(fset, f.Output, pi.Path)
-			continue
-		}
-		astutil.AddNamedImport(fset, f.Output, pi.Name, pi.Path)
-	}
 }
 
 func (f *File) Qualifier(pkg *types.Package) string {
@@ -57,16 +43,8 @@ func (f *File) Qualifier(pkg *types.Package) string {
 		if unq == ppath {
 			if ispec.Name == nil {
 				_, base := path.Split(ppath)
-				f.PendingImports = append(f.PendingImports, &ToImport{
-					Name: "",
-					Path: ppath,
-				})
 				return base
 			} else {
-				f.PendingImports = append(f.PendingImports, &ToImport{
-					Name: ispec.Name.Name,
-					Path: ppath,
-				})
 				return ispec.Name.Name
 			}
 		}
@@ -112,7 +90,6 @@ func (f *File) Write(ctx *context) error {
 		return fmt.Errorf("Can't create %s: %s", output, err)
 	}
 	f.GenerateCode(ctx, output)
-	f.AddPendingImports(ctx.fset)
 	format.Node(out, ctx.fset, f.Output)
 	out.Close()
 	fmt.Printf("Wrote %s\n", output)
