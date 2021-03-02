@@ -8,15 +8,15 @@ import "golang.org/x/tools/go/ast/astutil"
 
 
 // ImportAdder is a function returned by ImportSpecMatch if the
-// ImportSpec matches the specified name and nil otherwise.  The
+// ImportSpec matches the specified name, and nil otherwise.  The
 // ImportAdder can be called on a token.FileSet and an ast.File to add
 // the ImportSpec to that file.  It will use astutil.AddImport or
 // astutil.AddNamedImport to add the import.
 type ImportAdder func(fset *token.FileSet, file *ast.File)
 
 
-// ImportSpecMatch returns an ImportAdder if the ImpoirtSpec matches the
-// specified name.  It can return an error is the Path of the
+// ImportSpecMatch returns an ImportAdder if the ImportSpec matches the
+// specified name.  It can return an error if the Path of the
 // ImportSpec isn't a quoted expression
 func ImportSpecMatch(ispec *ast.ImportSpec, name string) (ImportAdder, error) {
 	unq, err := strconv.Unquote(ispec.Path.Value)
