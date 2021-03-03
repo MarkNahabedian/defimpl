@@ -19,6 +19,8 @@ type GlobalsTemplateParameter interface {
 	InterfaceName() string
 	StructName() string
 	SlotName() string
+	MethodParameters() string
+	MethodResults() string
 }
 
 

@@ -35,7 +35,7 @@ func (vd *Verb_Discriminate) Description() string {
 
 // NewVerbPhrase is part of the VerbDefinition interface.
 func (vd *Verb_Discriminate) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, field *ast.Field, comment *ast.Comment) (VerbPhrase, error) {
-	_, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
+	_, err, _ := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}

@@ -38,7 +38,7 @@ func (vd *Verb_Read) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fiel
 	if err != nil {
 		return nil, err
 	}
-	slot_type, err := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
+	slot_type, err, _ := CheckSignatures(ctx, vd, idef.Package(), field, vd.GlobalsTemplate())
 	if err != nil {
 		return nil, err
 	}

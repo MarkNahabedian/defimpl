@@ -41,3 +41,13 @@ func (vp *baseVerbPhrase) StructName() string {
 	return vp.InterfaceDefinition().StructName()
 }
 
+func (vp *baseVerbPhrase) MethodParameters() string {
+	panic("MethodParameters called on a VerbPhrase that doesn't support it.")
+	return ""
+
+}
+
+func (vp *baseVerbPhrase) MethodResults() string {
+	panic("MethodResults called on a VerbPhrase that doesn't support it.")
+	return ""
+}

@@ -31,9 +31,10 @@ type fakeInterfaceDefinition struct {
 //
 // CheckSignatures then executes the template and parses the result to
 // serve as the pattern argument of AstMatch.
-func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Field, tmpl *template.Template) (types.Type, error) {
+func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Field, tmpl *template.Template) (
+	types.Type, error, map[string]interface{}) {
 	if len(field.Names) != 1 {
-		return nil, nil
+		return nil, nil, nil
 	}
 	// This needs to match the definition of (*baseVerbPhrase).MethodName:
 	field_name := field.Names[0].Name
@@ -45,16 +46,18 @@ func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Fie
 		StructName: MatchVar("IGNORE"),
 		SlotName: MatchVar("IGNORE"),
 		SlotType: MatchVar("_SLOT_TYPE"),
+		MethodParameters: MatchVar("__PARAMETERS"),
+		MethodResults: MatchVar("__RESULTS"),
 		InterfaceDefinition: fakeInterfaceDefinition {
 			Package: "",
 		},
 	}); err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 	fset := token.NewFileSet()
-	parsed, err := parser.ParseFile(fset, "pattern", w.String(), parser.ParseComments)
+	parsed, err := parser.ParseFile(fset, "defimpl/CheckSignatures:pattern", w.String(), parser.ParseComments)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s for pattern:\n%s", err, w.String()), nil
 	}
 	var fd *ast.FuncDecl
 	// Find the method definition from the parsed template result
@@ -74,37 +77,42 @@ func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Fie
 	}
 	if fd == nil {
 		return nil, fmt.Errorf("verb MethodTemplate for %q should have exactly one FuncDecl",
-			vd.Tag())
+			vd.Tag()), nil
 	}
-	scratchpad :=  map[string]interface{}{}
+	scratchpad := map[string]interface{}{}
 	// Match the method definition with the Field of the
 	// interface, extracting the data type:
 	matched, err := util.AstMatch(fd.Type, field.Type, scratchpad)
 	if err != nil {
 		return nil, fmt.Errorf("defimpl: %s: %s",
 			ctx.fset.Position(field.Comment.List[0].Slash).String(),
-			err)
+			err), scratchpad
 	}
 	if !matched {
 		return nil, fmt.Errorf("Method signature inappropriate for verb %q",
-			vd.Tag())
+			vd.Tag()), scratchpad
 	}
 	if t, ok := scratchpad["_SLOT_TYPE"]; ok {
-		return ctx.info.Types[t.(ast.Expr)].Type, nil
+		return ctx.info.Types[t.(ast.Expr)].Type, nil, scratchpad
 	} else {
-		return nil, nil
+		return nil, nil, scratchpad
 	}
 }
 
-
+// CheckSignaturesVerbPhraseSurrogate should present the same
+// "interface" to a Template as GlobalsTemplateParameter does.  I
+// don't think Go provides a way to assert this.
 type CheckSignaturesVerbPhraseSurrogate struct {
 	MethodName MatchVar
 	InterfaceName MatchVar
 	StructName MatchVar
 	SlotName MatchVar
 	SlotType MatchVar
+	MethodParameters MatchVar
+	MethodResults MatchVar
 	InterfaceDefinition fakeInterfaceDefinition
 }
+
 
 // MatchVar is described in the comment for CheckSignatures.
 type MatchVar string
