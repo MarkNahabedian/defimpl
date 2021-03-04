@@ -65,7 +65,7 @@ func (vd *Verb_Panic) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 var panic_method_template = template.Must(
 		template.New("panic_method_template").Parse(`
 // {{.MethodName}} is part of the {{.InterfaceName}} interface.  defimpl verb {{.Verb.Tag}}.
-func (x *{{.StructName}}) {{.MethodName}}({{.MethodParameters}}) ({{.MethodResults}}) {
+func (x *{{.StructName}}) {{.MethodName}}({{.MethodParameters}}) {{.MethodResults}} {
 	panic("(*{{.StructName}}).{{.MethodName}} was called")
 }
 `))
