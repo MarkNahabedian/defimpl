@@ -140,6 +140,7 @@ func (vd *slotVerbDefinition) StructBody(vp VerbPhrase) (string, error) {
 func parse_slot_verb_phrase(ctx *context, field *ast.Field, comment *ast.Comment) (string, error) {
 	val, ok := reflect.StructTag(comment.Text[2:]).Lookup("defimpl")
 	if !ok {
+		// Shouldn't happen.  To get here we should already have found a defimpl comment.
 		panic("Can't construct VerbPhrase from a non-defimpl comment.")
 	}
 	split := strings.Split(val, " ")
