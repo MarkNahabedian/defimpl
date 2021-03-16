@@ -7,8 +7,8 @@ import "defimpl/util"
 
 type PanicVerbPhrase struct {
 	baseVerbPhrase
-	MethodParameters interface{}
-	MethodResults interface{}
+	MethodParameters string
+	MethodResults string
 }
 
 var _ VerbPhrase = (*PanicVerbPhrase)(nil)
@@ -44,11 +44,11 @@ func (vd *Verb_Panic) NewVerbPhrase(ctx *context, idef *InterfaceDefinition, fie
 	q := util.TypeStringQualifier(idef.File.AstFile)
 	params := ""
 	if p, ok := scratchpad["__PARAMETERS"].(*ast.FieldList); ok {
-		params = util.FieldListString(p, ctx.info, q, false)
+		params, _ = util.FieldListString(p, ctx.info, q, false, false)
 	}
 	results := ""
 	if r, ok := scratchpad["__RESULTS"].(*ast.FieldList); ok {
-		results = util.FieldListString(r, ctx.info, q, true)
+		results, _ = util.FieldListString(r, ctx.info, q, false, true)
 	}
 	vp := &PanicVerbPhrase{
 		baseVerbPhrase: baseVerbPhrase {
