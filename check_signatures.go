@@ -44,9 +44,11 @@ func CheckSignatures(ctx *context, vd VerbDefinition, pkg string, field *ast.Fie
 		MethodName: MatchVar(field_name),
 		InterfaceName: MatchVar("IGNORE"),
 		StructName: MatchVar("IGNORE"),
+		DelegateTo: MatchVar("IGNORE"),
 		SlotName: MatchVar("IGNORE"),
 		SlotType: MatchVar("_SLOT_TYPE"),
 		MethodParameters: MatchVar("__PARAMETERS"),
+		ParameterNames: MatchVar("IGNORE"),
 		MethodResults: MatchVar("__RESULTS"),
 		InterfaceDefinition: fakeInterfaceDefinition {
 			Package: "",
@@ -106,9 +108,11 @@ type CheckSignaturesVerbPhraseSurrogate struct {
 	MethodName MatchVar
 	InterfaceName MatchVar
 	StructName MatchVar
+	DelegateTo MatchVar
 	SlotName MatchVar
 	SlotType MatchVar
 	MethodParameters MatchVar
+	ParameterNames MatchVar
 	MethodResults MatchVar
 	InterfaceDefinition fakeInterfaceDefinition
 }
