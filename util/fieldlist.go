@@ -1,5 +1,6 @@
 package util
 
+import "fmt"
 import "path"
 import "strconv"
 import "strings"
@@ -20,18 +21,32 @@ func FieldListSlice(l *ast.FieldList) []*ast.Field {
 
 
 // FieldListString returns a string representation of a FieldList
-// suitable for including in code.  If for_result is true then the
-// resulting string will be wrapped in parentheses.
-func FieldListString(l *ast.FieldList, info *types.Info, qualifier types.Qualifier, for_result bool) string {
-	result := []string{}
-	for _, field := range FieldListSlice(l) {
-		result = append(result, types.TypeString(info.Types[field.Type].Type, qualifier))
+// suitable for including in code.
+//
+// If need_names is true then generated parameter names will be
+// included in the formal list and a second string that is just a
+// comma separated lst of those names is returned.
+//
+// If for_result is true then the resulting string will be wrapped in
+// parentheses.
+func FieldListString(l *ast.FieldList, info *types.Info, qualifier types.Qualifier, need_names bool, for_result bool) (string, string) {
+	formal := []string{}
+	names := []string{}
+	for i, field := range FieldListSlice(l) {
+		typestring := types.TypeString(info.Types[field.Type].Type, qualifier)
+		if need_names {
+			name := fmt.Sprintf("a%d", i)
+			formal = append(formal, fmt.Sprintf("%s %s", name, typestring))
+			names = append(names, name)
+		} else {
+			formal = append(formal, typestring)
+		} 
 	}
-	s := strings.Join(result, ", ")
+	s := strings.Join(formal, ", ")
 	if for_result && s != "" {
 		s = "(" + s + ")"
 	}
-	return s
+	return s, strings.Join(names, ", ")
 }
 
 
