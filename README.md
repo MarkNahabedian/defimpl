@@ -95,3 +95,6 @@ filed named in a defimpl comment.
 
 Defimpl is extensible.  New verbs can be defined.  See the verb_*.go
 files for examples.
+
+The currently supported verbs are briefly described in
+[verbs.txt](./verbs.txt].

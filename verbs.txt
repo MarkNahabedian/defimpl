@@ -1,0 +1,29 @@
+append            appends the specified values to the field.
+
+delegate          the method will delegate to another object.
+
+delete            deletes the specified item from the filed.
+
+discriminate      the empty method that distinguishes implementors of
+                  this interface from those that would otherwise have
+                  the same method set.
+
+embed             Specifies a concrete type to embed to implement an
+                  interface.
+
+index             returns the element of the specified slice valued
+                  field at the specified (zero based) index.
+
+iterate           applies the specified function to each element of
+                  the  slice-valued slot until the function returns
+                  false.
+
+length            returns the length of the specified slice valued field.
+
+panic             the method will panic if called, for when an
+                  implementation only needs to partially implement an
+                  interface.
+                  
+read              returns the value of the field.
+
+set               sets the value of the field to that provided.
